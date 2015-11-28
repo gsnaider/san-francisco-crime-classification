@@ -28,7 +28,7 @@ public:
 	 * Recibe los features en una matriz de x_train y la clasificacion de forma Ej: {0,0,1,0} en y_train
 	 * Se usa el mismo formato para el set de datos para validacion
 	 */
-	void SGD(MatrixXf* x_train, VectorXd* y_train, MatrixXf* x_test, VectorXd* y_test, int epochs, int miniBatchSize,
+	void SGD(MatrixXf* x_train, VectorXi* y_train, MatrixXf* x_test, VectorXi* y_test, int epochs, int miniBatchSize,
 			float learningRate, float regularizationFactor);
 
 	virtual ~Network();
@@ -42,17 +42,17 @@ private:
 
 	void defaultWeightInitializer();
 
-	void updateMiniBatch(MatrixXf* miniBatch_x, VectorXd* miniBatch_y);
+	void updateMiniBatch(MatrixXf* miniBatch_x, VectorXi* miniBatch_y);
 
 	nablas_t backPropagation(VectorXf* x, int y);
 
-	int accuracy(MatrixXf* x, VectorXd* y);
+	int accuracy(MatrixXf* x, VectorXi* y);
 
 	VectorXf* feedfordward(VectorXf* a);
 
-//	VectorXf costFunction(VectorXf* estimatedResults, VectorXd* y);
+//	VectorXf costFunction(VectorXf* estimatedResults, VectorXi* y);
 
-	VectorXf costDelta(VectorXf* estimatedResults, VectorXd* y);
+	VectorXf costDelta(VectorXf* estimatedResults, VectorXi* y);
 
 	VectorXf softmax(VectorXf* z);
 
@@ -62,7 +62,7 @@ private:
 
 	int argmax(VectorXf* v);
 
-	VectorXd yToVector(int y);
+	VectorXi yToVector(int y);
 };
 
 #endif /* NETWORK_H_ */
