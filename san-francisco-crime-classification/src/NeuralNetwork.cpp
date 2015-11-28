@@ -60,14 +60,14 @@ int main() {
 
 	matrix_train = matrix.block(0, 0, ultimo_indice_train, matrix.cols());
 
-	cout << "matrix_train: " << matrix_train.block(0, 0, 5, matrix_train.cols()) << "\n"  << "\n";
+	//cout << "matrix_train: " << matrix_train.block(0, 0, 5, matrix_train.cols()) << "\n"  << "\n";
 
 	matrix_test = matrix.block(ultimo_indice_train, 0,
 			matrix.rows() - ultimo_indice_train, matrix_train.cols());
 
-	cout << "matrix_test: " << matrix_test.block(0, 0, 5, matrix_test.cols()) << "\n"  << "\n" ;
+	//cout << "matrix_test: " << matrix_test.block(0, 0, 5, matrix_test.cols()) << "\n"  << "\n" ;
 
-	/*
+
 	 MatrixXf x_train;
 	 VectorXi y_train;
 	 MatrixXf x_test;
@@ -79,6 +79,11 @@ int main() {
 	 x_test = matrix_test.block(0, 0, matrix_test.rows(), matrix_test.cols() - 1);
 	 y_test = matrix_test.block(0, matrix_test.cols() - 1, matrix_test.rows(), 1).cast<int>();
 
+	 //cout << "x_train: " << x_train.block(0, 0, 5, x_train.cols()) << "\n"  << "\n" ;
+	 //cout << "y_train: " << y_train.block(0, 0, 5, y_train.cols()) << "\n"  << "\n" ;
+	 //cout << "x_test: " << x_test.block(0, 0, 5, x_test.cols()) << "\n"  << "\n" ;
+	 //cout << "y_test: " << y_test.block(0, 0, 5, y_test.cols()) << "\n"  << "\n" ;
+
 	 //writer.makeSubmitWithMatrix("submit.csv",matrix);
 
 	 //TODO HASTA ACA LO QUE NO ESTA PROBADO
@@ -89,7 +94,7 @@ int main() {
 
 	 vector<int> sizes;
 	 sizes.push_back(input_dim);
-	 sizes.push_back(8);
+	 sizes.push_back(50);
 	 sizes.push_back(output_dim);
 
 	 int epochs = 30;
@@ -100,7 +105,7 @@ int main() {
 	 Network* net = new Network(sizes);
 	 net->SGD(&x_train, &y_train, &x_test, &y_test, epochs, miniBatchSize, learningRate, regularizationFactor);
 
-	 delete net;*/
+	 delete net;
 	return 0;
 }
 
