@@ -53,8 +53,8 @@ inputData_t* generateInputData() {
 					+ permutacionFilasRandom.indices().size());
 
 	matrix = permutacionFilasRandom * (matrix);
-	int ultimo_indice_train = round(matrix.rows() * 0.05);
-	int ultimo_indice_test = round(matrix.rows() * 0.1);
+	int ultimo_indice_train = round(matrix.rows() * 0.8);
+	int ultimo_indice_test = round(matrix.rows() * 0.9);
 
 	MatrixXf matrix_train;
 	MatrixXf matrix_test;
@@ -176,7 +176,7 @@ int main() {
 
 	int epochs = 3;
 	int miniBatchSize = 600;
-	float learningRate = 0.1;
+	float learningRate = 0.5;
 	float regularizationFactor = 0.1;
 
 	Network* net = trainNetWithParsedTrainData(hiddenLayers, epochs,

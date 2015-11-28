@@ -20,7 +20,7 @@ void Network::defaultWeightInitializer() {
 		return;
 	}
 	for (int i = 1; i < this->numLayers; i++) {
-		VectorXf bias = VectorXf::Zero(this->layers[i], 1);
+		VectorXf bias = VectorXf::Random(this->layers[i], 1).cwiseAbs();
 		this->biases.push_back(bias);
 
 		srand(time(0)); //para que cambie el random de cada matriz
@@ -34,7 +34,7 @@ void printSample(MatrixXf *matrix, char* texto){
 	cout << texto << "\n"<< matrix->block(0,0,4,matrix->cols()) << "\n";
 }
 void printSample(VectorXf *matrix, char* texto){
-	cout << texto << "\n"<< matrix->block(0,0,4,matrix->cols()) << "\n";
+	cout << texto << "\n"<< matrix->block(0,0,6,matrix->cols()) << "\n";
 }
 
 void printSample(VectorXi *matrix, char* texto){
@@ -61,9 +61,8 @@ void Network::SGD(MatrixXf* x_train, VectorXf* y_train, MatrixXf* x_test, Vector
 		random_shuffle(permutacionFilasRandom.indices().data(),
 				permutacionFilasRandom.indices().data() + permutacionFilasRandom.indices().size());
 		x_train_shuffled = permutacionFilasRandom * (*x_train);
-		printSample(&x_train_shuffled, "x_train_shuffled");
+
 		y_train_shuffled = permutacionFilasRandom * (*y_train);
-		printSample(&y_train_shuffled, "y_train_shuffled");
 
 		for (int j = 0; j < (n - miniBatchSize); j += miniBatchSize) {
 			miniBatch_x = x_train_shuffled.block(j, 0, miniBatchSize, featuresSize);
@@ -83,8 +82,11 @@ void Network::SGD(MatrixXf* x_train, VectorXf* y_train, MatrixXf* x_test, Vector
 
 void Network::updateMiniBatch(MatrixXf* miniBatch_x, VectorXf* miniBatch_y,
 		float learningRate, float regularizationFactor, int dataSize) {
+
+	int y;
 	vector<VectorXf> nabla_b;
 	vector<MatrixXf> nabla_w;
+	nablas_t nablas;
 
 	for (size_t i = 0; i < this->biases.size(); i++) {
 		nabla_b.push_back(VectorXf::Zero(this->biases[i].rows(), 1));
@@ -92,11 +94,14 @@ void Network::updateMiniBatch(MatrixXf* miniBatch_x, VectorXf* miniBatch_y,
 
 	for (size_t i = 0; i < this->weights.size(); i++) {
 		nabla_w.push_back(MatrixXf::Zero(this->weights[i].rows(), this->weights[i].cols()));
+
+
 	}
 	for (int i = 0; i < miniBatch_y->size(); i++) {
 		VectorXf x = miniBatch_x->row(i);
-		int y = (*miniBatch_y)[i];
-		nablas_t nablas = backPropagation(&x, y);
+
+		y = (*miniBatch_y)[i];
+		nablas = backPropagation(&x, y);
 		for (size_t i = 0; i < nabla_b.size(); i++) {
 			nabla_b[i] = nabla_b[i] + nablas.deltaNabla_b[i];
 		}
@@ -128,6 +133,7 @@ nablas_t Network::backPropagation(VectorXf* x, int y) {
 	VectorXf rp;
 	MatrixXf w;
 	VectorXf delta;
+	VectorXf y_vector;
 
 	for (size_t i = 0; i < this->biases.size(); i++) {
 		nabla_b.push_back(VectorXf::Zero(this->biases[i].rows(), 1));
@@ -137,18 +143,23 @@ nablas_t Network::backPropagation(VectorXf* x, int y) {
 		nabla_w.push_back(MatrixXf::Zero(this->weights[i].rows(), this->weights[i].cols()));
 	}
 
-	VectorXf y_vector = yToVector(y);
+	y_vector = yToVector(y);
 
 	activation = *x;
+	//printSample(&activation,"activation");
 
 	activations.push_back(activation);
 
 	for (size_t i = 0; (i < (this->biases.size() - 1)); i++) {
 
 		z = this->weights[i] * activation + this->biases[i];
+		//printSample(&z,"esto es z");
+		//printSample(&this->biases[i],"this->biases[i]");
+		//printSample(&this->weights[i],"this->biases[i]");
 
 		zs.push_back(z);
 		activation = relu(&z);
+		//printSample(&activation,"activation vector x features");
 		activations.push_back(activation);
 	}
 
