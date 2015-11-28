@@ -65,6 +65,8 @@ int main() {
 	matrix_test = matrix.block(ultimo_indice_train, 0,
 			matrix.rows() - ultimo_indice_train, matrix_train.cols());
 
+	matrix.resize(0,0) ;
+
 	//cout << "matrix_test: " << matrix_test.block(0, 0, 5, matrix_test.cols()) << "\n"  << "\n" ;
 
 
@@ -83,6 +85,9 @@ int main() {
 	 y_train = (matrix_train.block(0, matrix_train.cols() - 1, matrix_train.rows(), 1)); //me dice que puse different types
 	 x_test = matrix_test.block(0, 0, matrix_test.rows(), matrix_test.cols() - 1);
 	 y_test = matrix_test.block(0, matrix_test.cols() - 1, matrix_test.rows(), 1);
+
+	 matrix_train.resize(0,0) ;
+	 matrix_test.resize(0,0) ;
 
 	 cout << x_train.rows() << x_train.cols() << "\n";
 	 cout << y_train.rows() << y_train.cols() << "\n";
@@ -106,7 +111,7 @@ int main() {
 	 sizes.push_back(50);
 	 sizes.push_back(output_dim);
 
-	 int epochs = 2;
+	 int epochs = 30;
 	 int miniBatchSize = 100;
 	 float learningRate = 0.5;
 	 float regularizationFactor = 0.1;
