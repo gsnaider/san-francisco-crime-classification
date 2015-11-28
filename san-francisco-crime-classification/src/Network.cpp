@@ -34,13 +34,13 @@ void Network::defaultWeightInitializer() {
 		this->weights.push_back(w);
 	}
 }
-void Network::SGD(MatrixXf* x_train, VectorXi* y_train, MatrixXf* x_test, VectorXi* y_test, int epochs,
+void Network::SGD(MatrixXf* x_train, VectorXf* y_train, MatrixXf* x_test, VectorXf* y_test, int epochs,
 		int miniBatchSize, float learningRate, float regularizationFactor) {
 
 	MatrixXf x_train_shuffled;
-	VectorXi y_train_shuffled;
+	VectorXf y_train_shuffled;
 	MatrixXf miniBatch_x;
-	VectorXi miniBatch_y;
+	VectorXf miniBatch_y;
 	vector<int> results;
 	int result;
 
@@ -62,7 +62,7 @@ void Network::SGD(MatrixXf* x_train, VectorXi* y_train, MatrixXf* x_test, Vector
 		x_train_shuffled = permutacionFilasRandom * (*x_train);
 		y_train_shuffled = permutacionFilasRandom * (*y_train);
 
-		for (int j = 0; j < n; j += this->miniBatchSize) {
+		for (int j = 0; j < (n - this->miniBatchSize); j += this->miniBatchSize) {
 			miniBatch_x = x_train_shuffled.block(j, 0, this->miniBatchSize, featuresSize);
 			miniBatch_y = y_train_shuffled.segment(j, this->miniBatchSize);
 			updateMiniBatch(&miniBatch_x, &miniBatch_y);
@@ -77,7 +77,7 @@ void Network::SGD(MatrixXf* x_train, VectorXi* y_train, MatrixXf* x_test, Vector
 
 }
 
-void Network::updateMiniBatch(MatrixXf* miniBatch_x, VectorXi* miniBatch_y) {
+void Network::updateMiniBatch(MatrixXf* miniBatch_x, VectorXf* miniBatch_y) {
 	vector<VectorXf> nabla_b;
 	vector<MatrixXf> nabla_w;
 
@@ -132,7 +132,7 @@ nablas_t Network::backPropagation(VectorXf* x, int y) {
 		nabla_w.push_back(MatrixXf::Zero(this->weights[i].rows(), this->weights[i].cols()));
 	}
 
-	VectorXi y_vector = yToVector(y);
+	VectorXf y_vector = yToVector(y);
 
 	activation = *x;
 
@@ -208,9 +208,9 @@ VectorXf Network::softmax(VectorXf* z) {
 	return result;
 }
 
-VectorXi Network::yToVector(int y) {
+VectorXf Network::yToVector(int y) {
 	int output_size = this->sizes[this->sizes.size() - 1];
-	VectorXi v = VectorXi::Zero(output_size, 1);
+	VectorXf v = VectorXf::Zero(output_size, 1);
 	v[y] = 1;
 	return v;
 }
@@ -227,11 +227,11 @@ int Network::argmax(VectorXf* v){
 	return max_idx;
 }
 
-VectorXf Network::costDelta(VectorXf* estimatedResults, VectorXi* y) {
-	return ((*estimatedResults) - (y->cast<float>()));
+VectorXf Network::costDelta(VectorXf* estimatedResults, VectorXf* y) {
+	return ((*estimatedResults) - (*y));
 }
 
-int Network::accuracy(MatrixXf* x, VectorXi* y) {
+int Network::accuracy(MatrixXf* x, VectorXf* y) {
 
 	int correct_predictions = 0;
 	for (int i = 0; i < x->rows(); i++){

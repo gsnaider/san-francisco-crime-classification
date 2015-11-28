@@ -33,9 +33,9 @@ int main() {
 		cout << "cantidad de features: " << (matrix.cols() - 1) << endl << endl;
 	}
 
-	cout << "features: " << matrix.block(0, 0, 10, matrix.cols() - 1) << "\n"  << "\n";
+	//cout << "features: " << matrix.block(0, 0, 10, matrix.cols() - 1) << "\n"  << "\n";
 
-	cout << "clase: " << matrix.block(0, matrix.cols() - 1, 5, 1) << "\n"  << "\n";
+	//cout << "clase: " << matrix.block(0, matrix.cols() - 1, 5, 1) << "\n"  << "\n";
 
 	//TODO HASTA ACA ESTA PROBADO QUE ANDA
 
@@ -69,16 +69,25 @@ int main() {
 
 
 	 MatrixXf x_train;
-	 VectorXi y_train;
+	 VectorXf y_train;
 	 MatrixXf x_test;
-	 VectorXi y_test;
+	 VectorXf y_test;
 	 //separar matrix_train en x_train, y_train
 	 //separar matrix_test en x_test, y_test
 	 x_train = matrix_train.block(0, 0, matrix_train.rows(), matrix_train.cols() - 1);
-	 y_train = (matrix_train.block(0, matrix_train.cols() - 1, matrix_train.rows(), 1)).cast<int>(); //me dice que puse different types
+	 y_train = (matrix_train.block(0, matrix_train.cols() - 1, matrix_train.rows(), 1)); //me dice que puse different types
 	 x_test = matrix_test.block(0, 0, matrix_test.rows(), matrix_test.cols() - 1);
-	 y_test = matrix_test.block(0, matrix_test.cols() - 1, matrix_test.rows(), 1).cast<int>();
+	 y_test = matrix_test.block(0, matrix_test.cols() - 1, matrix_test.rows(), 1);
 
+	 x_train = matrix_train.block(0, 0, matrix_train.rows(), matrix_train.cols() - 1);
+	 y_train = (matrix_train.block(0, matrix_train.cols() - 1, matrix_train.rows(), 1)); //me dice que puse different types
+	 x_test = matrix_test.block(0, 0, matrix_test.rows(), matrix_test.cols() - 1);
+	 y_test = matrix_test.block(0, matrix_test.cols() - 1, matrix_test.rows(), 1);
+
+	 cout << x_train.rows() << x_train.cols() << "\n";
+	 cout << y_train.rows() << y_train.cols() << "\n";
+	 cout << x_test.rows() << x_test.cols() << "\n";
+	 cout << y_test.rows() << y_test.cols() << "\n";
 	 //cout << "x_train: " << x_train.block(0, 0, 5, x_train.cols()) << "\n"  << "\n" ;
 	 //cout << "y_train: " << y_train.block(0, 0, 5, y_train.cols()) << "\n"  << "\n" ;
 	 //cout << "x_test: " << x_test.block(0, 0, 5, x_test.cols()) << "\n"  << "\n" ;
@@ -97,8 +106,8 @@ int main() {
 	 sizes.push_back(50);
 	 sizes.push_back(output_dim);
 
-	 int epochs = 30;
-	 int miniBatchSize = 5;
+	 int epochs = 2;
+	 int miniBatchSize = 100;
 	 float learningRate = 0.5;
 	 float regularizationFactor = 0.1;
 
