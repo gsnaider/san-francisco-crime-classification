@@ -23,7 +23,7 @@ typedef struct {
 
 class Network {
 public:
-	Network(vector<int> sizes);
+	Network(vector<int> layers);
 	/*
 	 * Recibe los features en una matriz de x_train y la clasificacion de forma Ej: {0,0,1,0} en y_train
 	 * Se usa el mismo formato para el set de datos para validacion
@@ -31,24 +31,26 @@ public:
 	void SGD(MatrixXf* x_train, VectorXf* y_train, MatrixXf* x_test, VectorXf* y_test, int epochs, int miniBatchSize,
 			float learningRate, float regularizationFactor);
 
+	MatrixXf* evaluate(MatrixXf* x);
+
+	int accuracy(MatrixXf* x, VectorXf* y);
+
 	virtual ~Network();
 
 private:
-	float regularizationFactor, learningRate;
-	int numLayers, miniBatchSize, epochs, featuresSize, n;
-	vector<int> sizes;
+	int numLayers;
+	vector<int> layers;
 	vector<MatrixXf> weights;
 	vector<VectorXf> biases;
 
 	void defaultWeightInitializer();
 
-	void updateMiniBatch(MatrixXf* miniBatch_x, VectorXf* miniBatch_y);
+	void updateMiniBatch(MatrixXf* miniBatch_x, VectorXf* miniBatch_y,
+			float learningRate, float regularizationFactor, int dataSize);
 
 	nablas_t backPropagation(VectorXf* x, int y);
 
-	int accuracy(MatrixXf* x, VectorXf* y);
-
-	VectorXf* feedfordward(VectorXf* a);
+	VectorXf* feedfordward(VectorXf* row);
 
 //	VectorXf costFunction(VectorXf* estimatedResults, VectorXf* y);
 

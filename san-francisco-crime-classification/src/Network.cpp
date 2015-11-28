@@ -7,15 +7,10 @@
 
 #include "Network.h"
 
-Network::Network(vector<int> sizes) {
-	this->numLayers = sizes.size();
-	this->sizes = sizes;
-	this->regularizationFactor = 0.0;
-	this->epochs = 20;
-	this->miniBatchSize = 100;
-	this->learningRate = 0.5;
-	this->featuresSize = 0;
-	this->n = 0;
+Network::Network(vector<int> layers) {
+
+	this->numLayers = layers.size();
+	this->layers = layers;
 	this->defaultWeightInitializer();
 }
 void Network::defaultWeightInitializer() {
@@ -25,13 +20,13 @@ void Network::defaultWeightInitializer() {
 		return;
 	}
 	for (int i = 1; i < this->numLayers; i++) {
-		VectorXf bias = VectorXf::Zero(this->sizes[i], 1);
+		VectorXf bias = VectorXf::Zero(this->layers[i], 1);
 		this->biases.push_back(bias);
 
 		srand(time(0)); //para que cambie el random de cada matriz
-		MatrixXf w = MatrixXf::Random(this->sizes[i], this->sizes[i - 1]).cwiseAbs() / sqrt(this->sizes[i - 1]); //glorot unifrom
+		MatrixXf weight = MatrixXf::Random(this->layers[i], this->layers[i - 1]).cwiseAbs() / sqrt(this->layers[i - 1]); //glorot unifrom
 
-		this->weights.push_back(w);
+		this->weights.push_back(weight);
 	}
 }
 void Network::SGD(MatrixXf* x_train, VectorXf* y_train, MatrixXf* x_test, VectorXf* y_test, int epochs,
@@ -44,15 +39,10 @@ void Network::SGD(MatrixXf* x_train, VectorXf* y_train, MatrixXf* x_test, Vector
 	vector<int> results;
 	int result;
 
-	this->epochs = epochs;
-	this->miniBatchSize = miniBatchSize;
-	this->learningRate = learningRate;
-	this->regularizationFactor = regularizationFactor;
+	int n = x_train->rows();
+	int featuresSize = x_train->cols();
 
-	this->n = x_train->rows();
-	this->featuresSize = x_train->cols();
-
-	PermutationMatrix<Dynamic, Dynamic> permutacionFilasRandom(this->n);
+	PermutationMatrix<Dynamic, Dynamic> permutacionFilasRandom(n);
 	permutacionFilasRandom.setIdentity();
 	for (int i = 0; i < epochs; i++) {
 
@@ -62,22 +52,24 @@ void Network::SGD(MatrixXf* x_train, VectorXf* y_train, MatrixXf* x_test, Vector
 		x_train_shuffled = permutacionFilasRandom * (*x_train);
 		y_train_shuffled = permutacionFilasRandom * (*y_train);
 
-		for (int j = 0; j < (n - this->miniBatchSize); j += this->miniBatchSize) {
-			miniBatch_x = x_train_shuffled.block(j, 0, this->miniBatchSize, featuresSize);
-			miniBatch_y = y_train_shuffled.segment(j, this->miniBatchSize);
-			updateMiniBatch(&miniBatch_x, &miniBatch_y);
+		for (int j = 0; j < (n - miniBatchSize); j += miniBatchSize) {
+			miniBatch_x = x_train_shuffled.block(j, 0, miniBatchSize, featuresSize);
+			miniBatch_y = y_train_shuffled.segment(j, miniBatchSize);
+			updateMiniBatch(&miniBatch_x, &miniBatch_y, learningRate, regularizationFactor, n);
 		}
 		result = accuracy(x_test, y_test);
 		cout << result << " / " << y_test->size() << endl;
 		results.push_back(result);
 	}
+	cout << "Results" << endl;
 	for (size_t i = 0; i < results.size(); i++){
-		cout << "Results" << results[i] << endl;
+		cout << results[i] << endl;
 	}
 
 }
 
-void Network::updateMiniBatch(MatrixXf* miniBatch_x, VectorXf* miniBatch_y) {
+void Network::updateMiniBatch(MatrixXf* miniBatch_x, VectorXf* miniBatch_y,
+		float learningRate, float regularizationFactor, int dataSize) {
 	vector<VectorXf> nabla_b;
 	vector<MatrixXf> nabla_w;
 
@@ -101,7 +93,7 @@ void Network::updateMiniBatch(MatrixXf* miniBatch_x, VectorXf* miniBatch_y) {
 			nabla_w[i] = nabla_w_i + delta_nabla_w_i;
 		}
 		for (size_t i = 0; i < this->weights.size(); i++) {
-			weights[i] = weights[i] * (1 - learningRate * (regularizationFactor / n))
+			weights[i] = weights[i] * (1 - learningRate * (regularizationFactor / dataSize))
 					- nabla_w[i] * (learningRate / miniBatch_y->size());
 		}
 		for (size_t i = 0; i < this->biases.size(); i++) {
@@ -209,7 +201,7 @@ VectorXf Network::softmax(VectorXf* z) {
 }
 
 VectorXf Network::yToVector(int y) {
-	int output_size = this->sizes[this->sizes.size() - 1];
+	int output_size = this->layers[this->layers.size() - 1];
 	VectorXf v = VectorXf::Zero(output_size, 1);
 	v[y] = 1;
 	return v;
@@ -244,21 +236,34 @@ int Network::accuracy(MatrixXf* x, VectorXf* y) {
 	return correct_predictions;
 }
 
-VectorXf* Network::feedfordward(VectorXf* a) {
+VectorXf* Network::feedfordward(VectorXf* row) {
 	VectorXf z;
 	MatrixXf w;
 	VectorXf b;
 	for (size_t i = 0; i < (this->biases.size() - 1); i++) {
 		w = this->weights[i];
 		b = this->biases[i];
-		z = w * (*a) + b;
-		*a = relu(&z);
+		z = w * (*row) + b;
+		*row = relu(&z);
 	}
 	w = this->weights[weights.size() - 1];
 	b = this->biases[biases.size() - 1];
-	z = w * (*a) + b;
-	*a = softmax(&z);
-	return a;
+	z = w * (*row) + b;
+	*row = softmax(&z);
+	return row;
+}
+
+MatrixXf* Network::evaluate(MatrixXf* x){
+	MatrixXf results = MatrixXf::Zero(x->rows(), x->cols());
+	for (int i = 0; i < x->rows(); i++) {
+		VectorXf x_i = x->row(i);
+		VectorXf* result = this->feedfordward(&x_i);
+		for (int j = 0; j < result->size(); j++){
+			float result_j = (*result)[j];
+			results(i,j) = result_j;
+		}
+	}
+	return &results;
 }
 
 Network::~Network() {
