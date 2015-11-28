@@ -102,7 +102,7 @@ inputData_t* generateInputData(){
 			<< x_validation.cols() << "\n";
 
 
-	inputData_t* inputData;
+	inputData_t *inputData = (inputData_t*) malloc(sizeof(inputData_t));
 	inputData->x_train = x_train;
 	inputData->y_train = y_train;
 	inputData->x_test = x_test;
@@ -133,10 +133,12 @@ Network* trainNetWithParsedTrainData(vector<int> hiddenLayers, int epochs,
 
 	vector<int> layers;
 	layers.push_back(input_dim);
-	layers.insert(layers.end(), hiddenLayers.begin(), hiddenLayers.end());
+	layers.insert(layers.end(), hiddenLayers.begin(), hiddenLayers.end()); //inserta todos los elementos de hiddenLayers
 	layers.push_back(output_dim);
 
 	Network* net = new Network(layers);
+
+	cout << "Arranca train" << endl;
 
 	net->SGD(&x_train, &y_train, &x_test, &y_test, epochs, miniBatchSize,
 			learningRate, regularizationFactor);
@@ -179,16 +181,15 @@ void evaluateTestData(Network* net){
 int main() {
 
 	vector<int> hiddenLayers;
-	hiddenLayers.push_back(5);
+	hiddenLayers.push_back(40);
 
-	int epochs = 2;
-	int miniBatchSize = 100;
-	float learningRate = 0.5;
-	float regularizationFactor = 0.1;
+	int epochs = 10;
+	int miniBatchSize = 600;
+	float learningRate = 0.6;
+	float regularizationFactor = 0.01;
 
 
-	Network* net = trainNetWithParsedTrainData(hiddenLayers, epochs,
-			miniBatchSize, learningRate, regularizationFactor);
+	Network* net = trainNetWithParsedTrainData(hiddenLayers, epochs, miniBatchSize, learningRate, regularizationFactor);
 
 
 	//Usar para probar si anda el evaluateTestData
@@ -198,12 +199,12 @@ int main() {
 	layers.push_back(39);
 	Network* net = new Network(layers);
 */
-
+/*
 	if (net){
 		//TODO Deberiamos guardar los datos de la red en un archivo, sino se pierde despues de correr el prog!
 		evaluateTestData(net);
 		delete net;
-	}
+	}*/
 
 	return 0;
 }
