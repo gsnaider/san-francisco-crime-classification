@@ -29,6 +29,8 @@ typedef struct {
 	VectorXf y_validation;
 }inputData_t;
 
+const int OUTPUT_SIZE = 39;
+
 inputData_t* generateInputData(){
 	CsvReader reader;
 	MatrixXf matrix = reader.csvReadToMatrix("data/parsed_train.csv");
@@ -129,7 +131,7 @@ Network* trainNetWithParsedTrainData(vector<int> hiddenLayers, int epochs,
 	delete inputData;
 
 	int input_dim = x_train.cols();
-	int output_dim = 39;
+	int output_dim = OUTPUT_SIZE;
 
 	vector<int> layers;
 	layers.push_back(input_dim);
@@ -154,28 +156,14 @@ void evaluateTestData(Network* net){
 	CsvWriter writer;
 
 	MatrixXf testData = reader.csvReadToMatrix("data/parsed_test.csv");
-
-
 	if (testData.rows() == 0 && testData.cols() == 0) {
 		printf("Error leyendo test data.\n");
 		return;
 	}
 	cout << "cantidad de features: " << (testData.cols() - 1) << endl << endl;
-	MatrixXf* results = net->evaluate(&testData);
+	MatrixXf results = net->evaluate(&testData);
 
-
-//	Matriz de prueba
-//	MatrixXf results(4,6);
-//	results <<  0.1, 0.2, 0.3, 0.4, 0.1, 0.2,
-//				0.5, 0.3, 0.8, 0.1, 0.0, 0.2,
-//				0.1, 0.2, 0.3, 0.0, 0.8, 0.4,
-//				0.1, 0.4, 0.1, 0.9, 0.6, 0.2;
-
-	cout << "llego1" << endl;
-	cout << results->block(0,0,2,results->cols()) << '\n' << '\n';
-	cout << "llego2" << endl;
-
-	writer.makeSubmitWithMatrix("data/submit.csv", *results);
+	writer.makeSubmitWithMatrix("data/submit.csv", results);
 }
 
 int main() {
@@ -192,19 +180,19 @@ int main() {
 	Network* net = trainNetWithParsedTrainData(hiddenLayers, epochs, miniBatchSize, learningRate, regularizationFactor);
 
 
-	//Usar para probar si anda el evaluateTestData
-/*	vector<int> layers;
-	layers.push_back(43);
-	layers.insert(layers.end(), hiddenLayers.begin(), hiddenLayers.end());
-	layers.push_back(39);
-	Network* net = new Network(layers);
-*/
-/*
+//	Usar para probar si anda el evaluateTestData
+//	vector<int> layers;
+//	layers.push_back(43);
+//	layers.insert(layers.end(), hiddenLayers.begin(), hiddenLayers.end());
+//	layers.push_back(OUTPUT_SIZE);
+//	Network* net = new Network(layers);
+
+
 	if (net){
 		//TODO Deberiamos guardar los datos de la red en un archivo, sino se pierde despues de correr el prog!
 		evaluateTestData(net);
 		delete net;
-	}*/
+	}
 
 	return 0;
 }

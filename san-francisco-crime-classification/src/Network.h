@@ -24,6 +24,7 @@ typedef struct {
 class Network {
 public:
 	Network(vector<int> layers);
+
 	/*
 	 * Recibe los features en una matriz de x_train y la clasificacion de forma Ej: {0,0,1,0} en y_train
 	 * Se usa el mismo formato para el set de datos para validacion
@@ -31,7 +32,7 @@ public:
 	void SGD(MatrixXf* x_train, VectorXf* y_train, MatrixXf* x_test, VectorXf* y_test, int epochs, int miniBatchSize,
 			float learningRate, float regularizationFactor);
 
-	MatrixXf* evaluate(MatrixXf* x);
+	MatrixXf evaluate(MatrixXf* x);
 
 	int accuracy(MatrixXf* x, VectorXf* y);
 

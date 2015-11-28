@@ -253,8 +253,8 @@ VectorXf* Network::feedfordward(VectorXf* row) {
 	return row;
 }
 
-MatrixXf* Network::evaluate(MatrixXf* x){
-	MatrixXf results = MatrixXf::Zero(x->rows(), x->cols());
+MatrixXf Network::evaluate(MatrixXf* x){
+	MatrixXf results = MatrixXf::Zero(x->rows(), layers[layers.size() - 1]);
 	for (int i = 0; i < x->rows(); i++) {
 		VectorXf x_i = x->row(i);
 		VectorXf* result = this->feedfordward(&x_i);
@@ -263,7 +263,7 @@ MatrixXf* Network::evaluate(MatrixXf* x){
 			results(i,j) = result_j;
 		}
 	}
-	return &results;
+	return results;
 }
 
 Network::~Network() {
