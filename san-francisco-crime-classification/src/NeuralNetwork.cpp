@@ -27,12 +27,13 @@ typedef struct {
 	VectorXf y_test;
 	MatrixXf x_validation;
 	VectorXf y_validation;
-}inputData_t;
+} inputData_t;
 
 const int OUTPUT_SIZE = 39;
 
-inputData_t* generateInputData(){
+inputData_t* generateInputData() {
 	CsvReader reader;
+
 	MatrixXf matrix = reader.csvReadToMatrix("data/parsed_train.csv");
 
 	if (matrix.rows() == 0 && matrix.cols() == 0) {
@@ -52,8 +53,8 @@ inputData_t* generateInputData(){
 					+ permutacionFilasRandom.indices().size());
 
 	matrix = permutacionFilasRandom * (matrix);
-	int ultimo_indice_train = round(matrix.rows() * 0.8);
-	int ultimo_indice_test = round(matrix.rows() * 0.9);
+	int ultimo_indice_train = round(matrix.rows() * 0.05);
+	int ultimo_indice_test = round(matrix.rows() * 0.1);
 
 	MatrixXf matrix_train;
 	MatrixXf matrix_test;
@@ -103,7 +104,6 @@ inputData_t* generateInputData(){
 	cout << "Validation y: " << y_validation.rows() << "x"
 			<< x_validation.cols() << "\n";
 
-
 	inputData_t *inputData = (inputData_t*) malloc(sizeof(inputData_t));
 	inputData->x_train = x_train;
 	inputData->y_train = y_train;
@@ -128,6 +128,7 @@ Network* trainNetWithParsedTrainData(vector<int> hiddenLayers, int epochs,
 	MatrixXf x_validation = inputData->x_validation;
 	VectorXf y_validation = inputData->y_validation;
 
+
 	delete inputData;
 
 	int input_dim = x_train.cols();
@@ -146,12 +147,13 @@ Network* trainNetWithParsedTrainData(vector<int> hiddenLayers, int epochs,
 			learningRate, regularizationFactor);
 
 	int validationResult = net->accuracy(&x_validation, &y_validation);
-	cout << "Validation results: " <<  validationResult << " / " << y_validation.rows() << endl;
+	cout << "Validation results: " << validationResult << " / "
+			<< y_validation.rows() << endl;
 
 	return net;
 }
 
-void evaluateTestData(Network* net){
+void evaluateTestData(Network* net) {
 	CsvReader reader;
 	CsvWriter writer;
 
@@ -166,29 +168,21 @@ void evaluateTestData(Network* net){
 	writer.makeSubmitWithMatrix("data/submit.csv", results);
 }
 
+
 int main() {
 
 	vector<int> hiddenLayers;
 	hiddenLayers.push_back(40);
 
-	int epochs = 10;
+	int epochs = 3;
 	int miniBatchSize = 600;
-	float learningRate = 0.6;
-	float regularizationFactor = 0.01;
+	float learningRate = 0.1;
+	float regularizationFactor = 0.1;
 
+	Network* net = trainNetWithParsedTrainData(hiddenLayers, epochs,
+			miniBatchSize, learningRate, regularizationFactor);
 
-	Network* net = trainNetWithParsedTrainData(hiddenLayers, epochs, miniBatchSize, learningRate, regularizationFactor);
-
-
-//	Usar para probar si anda el evaluateTestData
-//	vector<int> layers;
-//	layers.push_back(43);
-//	layers.insert(layers.end(), hiddenLayers.begin(), hiddenLayers.end());
-//	layers.push_back(OUTPUT_SIZE);
-//	Network* net = new Network(layers);
-
-
-	if (net){
+	if (net) {
 		//TODO Deberiamos guardar los datos de la red en un archivo, sino se pierde despues de correr el prog!
 		evaluateTestData(net);
 		delete net;

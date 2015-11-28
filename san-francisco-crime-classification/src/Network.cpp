@@ -29,6 +29,17 @@ void Network::defaultWeightInitializer() {
 		this->weights.push_back(weight);
 	}
 }
+
+void printSample(MatrixXf *matrix, char* texto){
+	cout << texto << "\n"<< matrix->block(0,0,4,matrix->cols()) << "\n";
+}
+void printSample(VectorXf *matrix, char* texto){
+	cout << texto << "\n"<< matrix->block(0,0,4,matrix->cols()) << "\n";
+}
+
+void printSample(VectorXi *matrix, char* texto){
+	cout << texto << "\n"<< matrix->block(0,0,4,matrix->cols()) << "\n";
+}
 void Network::SGD(MatrixXf* x_train, VectorXf* y_train, MatrixXf* x_test, VectorXf* y_test, int epochs,
 		int miniBatchSize, float learningRate, float regularizationFactor) {
 
@@ -50,7 +61,9 @@ void Network::SGD(MatrixXf* x_train, VectorXf* y_train, MatrixXf* x_test, Vector
 		random_shuffle(permutacionFilasRandom.indices().data(),
 				permutacionFilasRandom.indices().data() + permutacionFilasRandom.indices().size());
 		x_train_shuffled = permutacionFilasRandom * (*x_train);
+		printSample(&x_train_shuffled, "x_train_shuffled");
 		y_train_shuffled = permutacionFilasRandom * (*y_train);
+		printSample(&y_train_shuffled, "y_train_shuffled");
 
 		for (int j = 0; j < (n - miniBatchSize); j += miniBatchSize) {
 			miniBatch_x = x_train_shuffled.block(j, 0, miniBatchSize, featuresSize);
