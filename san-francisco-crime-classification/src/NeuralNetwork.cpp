@@ -33,7 +33,50 @@ const int OUTPUT_SIZE = 39;
 
 //Esto es para testeo.
 //TODO Para correr con todos los datos tiene que ser DATA_SIZE = 1!!!
-const float DATA_SIZE = 0.1;
+const float DATA_SIZE = 0.01;
+
+
+int argmax(const VectorXf& v){
+	float max = 0;
+	int max_idx;
+	for (int i = 0; i < v.size(); i++){
+		if (v[i] > max){
+			max = v[i];
+			max_idx = i;
+		}
+	}
+	return max_idx;
+}
+
+MatrixXf getBinMatrix(const MatrixXf& m){
+	MatrixXf bin_m(m.rows(), m.cols());
+	for (int i = 0; i < m.rows(); i++){
+		VectorXf bin_row = VectorXf::Zero(m.cols());
+		bin_row(argmax(m.row(i))) = 1;
+		for (int j = 0; j < bin_row.cols(); j++){
+			bin_m(i,j) = bin_row(j);
+		}
+	}
+	return bin_m;
+}
+
+
+
+//VectorXf* result = feedfordward(&x_i);
+//
+//int estimated_result = getBinMatrix(result);
+//
+//VectorXi result_binario = VectorXi::Zero(result->rows(),1);
+//
+//result_binario[estimated_result] = 1;
+//
+//for (int j = 0; j < result_binario.size(); j++) {
+//int result_j = result_binario[j];
+//results(i, j) = result_j;
+//}
+
+
+
 
 inputData_t generateInputData() {
 	CsvReader reader;
@@ -147,17 +190,21 @@ void evaluateTestData(const Network& net) {
 	}
 	cout << "cantidad de features: " << (testData.cols() - 1) << endl << endl;
 	MatrixXf results = net.evaluate(testData);
+	MatrixXf bin_results = getBinMatrix(results);
 
 	writer.makeSubmitWithMatrix("data/submit.csv", results);
+	writer.makeSubmitWithMatrix("data/bin_submit.csv", bin_results);
+
+
 }
 
 
 int main() {
 
 	vector<int> hiddenLayers;
-	hiddenLayers.push_back(40);
+	hiddenLayers.push_back(2);
 
-	int epochs = 10;
+	int epochs = 2;
 	int miniBatchSize = 100;
 	float learningRate = 0.1;
 	float regularizationFactor = 0.1;
