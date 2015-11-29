@@ -278,16 +278,33 @@ VectorXf Network::feedfordward(const VectorXf& row) const {
 MatrixXf Network::evaluate(const MatrixXf& x) const {
 	MatrixXf results(x.rows(), layers[layers.size() - 1]);
 	for (int i = 0; i < x.rows(); i++) {
+		//Para generar resultados con probabilidades
+//		VectorXf result = feedfordward(x.row(i));
+//		for (int j = 0; j < result.size(); j++){
+//			results(i,j) = result[j];
+//		}
+
+		//Para generar resultados binarios
 		VectorXf result = feedfordward(x.row(i));
-		for (int j = 0; j < result.size(); j++){
-			results(i,j) = result[j];
+		int estimated_result = argmax(result);
+		VectorXi result_binario = VectorXi::Zero(result.rows(), 1);
+		result_binario[estimated_result] = 1;
+		for (int j = 0; j < result_binario.size(); j++) {
+			int result_j = result_binario[j];
+			results(i, j) = result_j;
 		}
-		if (i < 3){
-			const MatrixXf& result_t = result.transpose();
-			cout << result_t << endl;
-		}
+
+//		if (i < 3){
+//			const MatrixXf& result_t = result.transpose();
+//			cout << result_t << endl;
+//		}
+
 	}
 	return results;
+
+
+
+
 }
 
 Network::~Network() {

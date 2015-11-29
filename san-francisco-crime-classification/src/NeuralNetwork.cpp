@@ -60,24 +60,6 @@ MatrixXf getBinMatrix(const MatrixXf& m){
 	return bin_m;
 }
 
-
-
-//VectorXf* result = feedfordward(&x_i);
-//
-//int estimated_result = getBinMatrix(result);
-//
-//VectorXi result_binario = VectorXi::Zero(result->rows(),1);
-//
-//result_binario[estimated_result] = 1;
-//
-//for (int j = 0; j < result_binario.size(); j++) {
-//int result_j = result_binario[j];
-//results(i, j) = result_j;
-//}
-
-
-
-
 inputData_t generateInputData() {
 	CsvReader reader;
 
@@ -190,10 +172,10 @@ void evaluateTestData(const Network& net) {
 	}
 	cout << "cantidad de features: " << (testData.cols() - 1) << endl << endl;
 	MatrixXf results = net.evaluate(testData);
-	MatrixXf bin_results = getBinMatrix(results);
+//	MatrixXf bin_results = getBinMatrix(results);
 
 	writer.makeSubmitWithMatrix("data/submit.csv", results);
-	writer.makeSubmitWithMatrix("data/bin_submit.csv", bin_results);
+//	writer.makeSubmitWithMatrix("data/bin_submit.csv", bin_results);
 
 
 }
