@@ -23,18 +23,18 @@ typedef struct {
 
 class Network {
 public:
-	Network(vector<int> layers);
+	Network(const vector<int>& inputLayers);
 
 	/*
 	 * Recibe los features en una matriz de x_train y la clasificacion de forma Ej: {0,0,1,0} en y_train
 	 * Se usa el mismo formato para el set de datos para validacion
 	 */
-	void SGD(MatrixXf* x_train, VectorXf* y_train, MatrixXf* x_test, VectorXf* y_test, int epochs, int miniBatchSize,
-			float learningRate, float regularizationFactor);
+	void SGD(const MatrixXf& x_train, const VectorXf& y_train, const MatrixXf& x_test, const VectorXf& y_test, const int epochs, const int miniBatchSize,
+			const float learningRate, const float regularizationFactor);
 
-	MatrixXi evaluate(MatrixXf* x);
+	MatrixXf evaluate(const MatrixXf& x) const;
 
-	int accuracy(MatrixXf* x, VectorXf* y);
+	int accuracy(const MatrixXf& x, const VectorXf& y) const;
 
 	virtual ~Network();
 
@@ -46,26 +46,26 @@ private:
 
 	void defaultWeightInitializer();
 
-	void updateMiniBatch(MatrixXf* miniBatch_x, VectorXf* miniBatch_y,
-			float learningRate, float regularizationFactor, int dataSize);
+	void updateMiniBatch(const MatrixXf& miniBatch_x, const VectorXf& miniBatch_y,
+			const float learningRate, const float regularizationFactor, const int dataSize);
 
-	nablas_t backPropagation(VectorXf* x, int y);
+	nablas_t backPropagation(const VectorXf& x, const int y);
 
-	VectorXf* feedfordward(VectorXf* row);
+	VectorXf feedfordward(const VectorXf& row) const;
 
 //	VectorXf costFunction(VectorXf* estimatedResults, VectorXf* y);
 
-	VectorXf costDelta(VectorXf* estimatedResults, VectorXf* y);
+	VectorXf costDelta(const VectorXf& estimatedResults, const VectorXf& y) const;
 
-	VectorXf softmax(VectorXf* z);
+	VectorXf softmax(const VectorXf& z) const;
 
-	VectorXf relu(VectorXf* z);
+	VectorXf relu(const VectorXf& z) const;
 
-	VectorXf reluPrime(VectorXf* z);
+	VectorXf reluPrime(const VectorXf& z) const;
 
-	int argmax(VectorXf* v);
+	int argmax(const VectorXf& v) const;
 
-	VectorXf yToVector(int y);
+	VectorXf yToVector(int y) const;
 };
 
 #endif /* NETWORK_H_ */

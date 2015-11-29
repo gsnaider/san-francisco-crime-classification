@@ -31,14 +31,18 @@ typedef struct {
 
 const int OUTPUT_SIZE = 39;
 
-inputData_t* generateInputData() {
+//Esto es para testeo.
+//TODO Para correr con todos los datos tiene que ser DATA_SIZE = 1!!!
+const float DATA_SIZE = 0.1;
+
+inputData_t generateInputData() {
 	CsvReader reader;
 
 	MatrixXf matrix = reader.csvReadToMatrix("data/parsed_train.csv");
 
 	if (matrix.rows() == 0 && matrix.cols() == 0) {
 		printf("Error leyendo data.\n");
-		return NULL;
+		exit(-1);
 	} else {
 		cout << "cantidad de features: " << (matrix.cols() - 1) << endl << endl;
 	}
@@ -54,90 +58,63 @@ inputData_t* generateInputData() {
 
 	matrix = permutacionFilasRandom * (matrix);
 
-//	TODO Linea para testeo. Comentar.
-//	Recuce el tamanio de la matriz a un 10%
-	int nuevo_ultimo_indice = round(matrix.rows() * 0.1);
+//	Recuce el tamanio de la matriz para poder testear.
+//	TODO Para correr con todos los datos cambiar DATA_SIZE = 1.
+	int nuevo_ultimo_indice = round(matrix.rows() * DATA_SIZE);
 	matrix.conservativeResize(nuevo_ultimo_indice, matrix.cols());
 
 	int ultimo_indice_train = round(matrix.rows() * 0.8);
 	int ultimo_indice_test = round(matrix.rows() * 0.9);
 
-	MatrixXf matrix_train;
-	MatrixXf matrix_test;
-	MatrixXf matrix_validation;
+	MatrixXf matrix_train = matrix.block(0, 0, ultimo_indice_train, matrix.cols());
 
-	matrix_train = matrix.block(0, 0, ultimo_indice_train, matrix.cols());
-
-	matrix_test = matrix.block(ultimo_indice_train, 0,
+	MatrixXf matrix_test = matrix.block(ultimo_indice_train, 0,
 			ultimo_indice_test - ultimo_indice_train, matrix_train.cols());
 
-	matrix_validation = matrix.block(ultimo_indice_test, 0,
+	MatrixXf matrix_validation = matrix.block(ultimo_indice_test, 0,
 			matrix.rows() - ultimo_indice_test, matrix_train.cols());
 
 	matrix.resize(0, 0);
 
-	MatrixXf x_train;
-	VectorXf y_train;
-	MatrixXf x_test;
-	VectorXf y_test;
-	MatrixXf x_validation;
-	VectorXf y_validation;
+	inputData_t data;
 
 	//separar matrix_train en x_train, y_train
 	//separar matrix_test en x_test, y_test
-	x_train = matrix_train.block(0, 0, matrix_train.rows(),
+	data.x_train = matrix_train.block(0, 0, matrix_train.rows(),
 			matrix_train.cols() - 1);
-	y_train = (matrix_train.block(0, matrix_train.cols() - 1,
+	data.y_train = (matrix_train.block(0, matrix_train.cols() - 1,
 			matrix_train.rows(), 1)); //me dice que puse different types
-	x_test = matrix_test.block(0, 0, matrix_test.rows(),
+	data.x_test = matrix_test.block(0, 0, matrix_test.rows(),
 			matrix_test.cols() - 1);
-	y_test = matrix_test.block(0, matrix_test.cols() - 1, matrix_test.rows(),
+	data.y_test = matrix_test.block(0, matrix_test.cols() - 1, matrix_test.rows(),
 			1);
-	x_validation = matrix_validation.block(0, 0, matrix_validation.rows(),
+	data.x_validation = matrix_validation.block(0, 0, matrix_validation.rows(),
 			matrix_validation.cols() - 1);
-	y_validation = matrix_validation.block(0, matrix_validation.cols() - 1,
+	data.y_validation = matrix_validation.block(0, matrix_validation.cols() - 1,
 			matrix_validation.rows(), 1);
 
 	matrix_train.resize(0, 0);
 	matrix_test.resize(0, 0);
 
-	cout << "Train x: " << x_train.rows() << "x" << x_train.cols() << "\n";
-	cout << "Train y: " << y_train.rows() << "x" << y_train.cols() << "\n";
-	cout << "Test x: " << x_test.rows() << "x" << x_test.cols() << "\n";
-	cout << "Test y: " << y_test.rows() << "x" << y_test.cols() << "\n";
-	cout << "Validation x: " << x_validation.rows() << "x"
-			<< x_validation.cols() << "\n";
-	cout << "Validation y: " << y_validation.rows() << "x"
-			<< x_validation.cols() << "\n";
+	cout << "Train x: " << data.x_train.rows() << "x" << data.x_train.cols() << "\n";
+	cout << "Train y: " << data.y_train.rows() << "x" << data.y_train.cols() << "\n";
+	cout << "Test x: " << data.x_test.rows() << "x" << data.x_test.cols() << "\n";
+	cout << "Test y: " << data.y_test.rows() << "x" << data.y_test.cols() << "\n";
+	cout << "Validation x: " << data.x_validation.rows() << "x"
+			<< data.x_validation.cols() << "\n";
+	cout << "Validation y: " << data.y_validation.rows() << "x"
+			<< data.y_validation.cols() << "\n";
 
-	inputData_t *inputData = (inputData_t*) malloc(sizeof(inputData_t));
-	inputData->x_train = x_train;
-	inputData->y_train = y_train;
-	inputData->x_test = x_test;
-	inputData->y_test = y_test;
-	inputData->x_validation = x_validation;
-	inputData->y_validation = y_validation;
-
-	return inputData;
+	return data;
 
 }
 
-Network* trainNetWithParsedTrainData(vector<int> hiddenLayers, int epochs,
+Network trainNetWithParsedTrainData(vector<int> hiddenLayers, int epochs,
 		int miniBatchSize, float learningRate, float regularizationFactor) {
 
-	inputData_t* inputData = generateInputData();
+	inputData_t data = generateInputData();
 
-	MatrixXf x_train = inputData->x_train;
-	VectorXf y_train = inputData->y_train;
-	MatrixXf x_test = inputData->x_test;
-	VectorXf y_test = inputData->y_test;
-	MatrixXf x_validation = inputData->x_validation;
-	VectorXf y_validation = inputData->y_validation;
-
-
-	delete inputData;
-
-	int input_dim = x_train.cols();
+	int input_dim = data.x_train.cols();
 	int output_dim = OUTPUT_SIZE;
 
 	vector<int> layers;
@@ -145,21 +122,21 @@ Network* trainNetWithParsedTrainData(vector<int> hiddenLayers, int epochs,
 	layers.insert(layers.end(), hiddenLayers.begin(), hiddenLayers.end()); //inserta todos los elementos de hiddenLayers
 	layers.push_back(output_dim);
 
-	Network* net = new Network(layers);
+	Network net(layers);
 
 	cout << "Arranca train" << endl;
 
-	net->SGD(&x_train, &y_train, &x_test, &y_test, epochs, miniBatchSize,
+	net.SGD(data.x_train, data.y_train, data.x_test, data.y_test, epochs, miniBatchSize,
 			learningRate, regularizationFactor);
 
-	int validationResult = net->accuracy(&x_validation, &y_validation);
+	int validationResult = net.accuracy(data.x_validation, data.y_validation);
 	cout << "Validation results: " << validationResult << " / "
-			<< y_validation.rows() << endl;
+			<< data.y_validation.rows() << endl;
 
 	return net;
 }
 
-void evaluateTestData(Network* net) {
+void evaluateTestData(const Network& net) {
 	CsvReader reader;
 	CsvWriter writer;
 
@@ -169,7 +146,7 @@ void evaluateTestData(Network* net) {
 		return;
 	}
 	cout << "cantidad de features: " << (testData.cols() - 1) << endl << endl;
-	MatrixXi results = net->evaluate(&testData);
+	MatrixXf results = net.evaluate(testData);
 
 	writer.makeSubmitWithMatrix("data/submit.csv", results);
 }
@@ -181,19 +158,38 @@ int main() {
 	hiddenLayers.push_back(40);
 
 	int epochs = 10;
-	int miniBatchSize = 600;
-	float learningRate = 0.01;
-	float regularizationFactor = 0.01;
+	int miniBatchSize = 100;
+	float learningRate = 0.1;
+	float regularizationFactor = 0.1;
 
-	Network* net = trainNetWithParsedTrainData(hiddenLayers, epochs,
+	Network net = trainNetWithParsedTrainData(hiddenLayers, epochs,
 			miniBatchSize, learningRate, regularizationFactor);
 
-	if (net) {
-		//TODO Deberiamos guardar los datos de la red en un archivo, sino se pierde despues de correr el prog!
-		evaluateTestData(net);
-		delete net;
-	}
+	//TODO Deberiamos guardar los datos de la red en un archivo, sino se pierde despues de correr el prog!
+	evaluateTestData(net);
 
 	return 0;
 }
+
+//int main(){
+//	MatrixXf* m = new MatrixXf;
+//	MatrixXf* m2 = new MatrixXf;
+//
+//	*m << 1, 2,
+//	     4, 3;
+//	*m2 << 3, 4,
+//		     2, 0;
+//
+//
+//
+//	*m = MatrixXf::Random(2, 3);
+//	*m2 = MatrixXf::Random(2, 3);
+//
+//
+//	cout << *m << endl;
+//
+//	delete m;
+//
+//	return 0;
+//}
 

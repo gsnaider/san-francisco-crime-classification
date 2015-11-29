@@ -18,7 +18,7 @@ using namespace Eigen;
 class CsvWriter {
 public:
 	CsvWriter();
-	void makeSubmitWithMatrix(std::string path, MatrixXi matrix);
+	void makeSubmitWithMatrix(std::string path, MatrixXf matrix);
 	virtual ~CsvWriter();
 };
 

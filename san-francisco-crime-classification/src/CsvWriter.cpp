@@ -12,7 +12,7 @@ CsvWriter::CsvWriter() {
 
 }
 
-void CsvWriter::makeSubmitWithMatrix(string path,MatrixXi matrix){
+void CsvWriter::makeSubmitWithMatrix(string path,MatrixXf matrix){
 
 	ofstream file(path);
 	int rows = matrix.rows();
