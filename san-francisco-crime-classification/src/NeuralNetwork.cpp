@@ -53,6 +53,12 @@ inputData_t* generateInputData() {
 					+ permutacionFilasRandom.indices().size());
 
 	matrix = permutacionFilasRandom * (matrix);
+
+//	TODO Linea para testeo. Comentar.
+//	Recuce el tamanio de la matriz a un 10%
+	int nuevo_ultimo_indice = round(matrix.rows() * 0.1);
+	matrix.conservativeResize(nuevo_ultimo_indice, matrix.cols());
+
 	int ultimo_indice_train = round(matrix.rows() * 0.8);
 	int ultimo_indice_test = round(matrix.rows() * 0.9);
 
@@ -174,7 +180,7 @@ int main() {
 	vector<int> hiddenLayers;
 	hiddenLayers.push_back(40);
 
-	int epochs = 3;
+	int epochs = 10;
 	int miniBatchSize = 600;
 	float learningRate = 0.5;
 	float regularizationFactor = 0.1;
