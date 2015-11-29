@@ -83,29 +83,11 @@ MatrixXf CsvReader::csvReadToMatrix(string path){
 		//por cada elemento leido meto en la row de matriz
 		for (;it!=data.end();it++){
 
-			//ESTE IF PUEDE VOLAR SI NO HAY COMAS ENTRE " "
-			if ((*it).at(0)=='"'){
-
-				string partido = (*it);
-
-				do{
-					it++;
-					partido+=(*it);
-				}while ((*(*it).rbegin())!='"');
-				//si, ese choclo devuelve el ultimo char leido
-
-				matrix(rows-1,column) = strtof((partido).c_str(),NULL);
-
-			}else{
-
-				matrix(rows-1,column) = (strtof((*it).c_str(),NULL));
-			}
-
+			matrix(rows-1,column) = (strtof((*it).c_str(),NULL));
 			//por cada dato avanzo una columna en la matriz
 			column++;
 
 		}
-
 		//cheque que tengan el mismo tamanio, podria sacarlo si estoy seguro q esta bien formateado
 		if (column != columns ){
 			printf("Error en formato csv, lineas de distintos tamanios. Linea %d\n",rows);
@@ -118,14 +100,16 @@ MatrixXf CsvReader::csvReadToMatrix(string path){
 		//aumento cantidad de rows que es lo mismo que cantidad de lineas
 		rows++;
 
-	} while (file >> row || rows < lines+1);
+	} while (file >> row);
+
 	file.close();
+
 	auto end = chrono::steady_clock::now();
 	auto diff = end-start;
+
 	cout << "Tiempo carga de matriz: " << chrono::duration <double, milli> (diff).count() << " ms\n";
 	cout << "Proceso " << rows-1 << "lineas\n";
-	//cout << "Elemento 2,9: " << matrix(1,8) << "\n";
-	//cout << "Elemnto 2,8: " << matrix(1,7) << "\n";
+
 	return matrix;
 }
 
