@@ -19,6 +19,9 @@ class CsvWriter {
 public:
 	CsvWriter();
 	void makeSubmitWithMatrix(std::string path, MatrixXf matrix);
+	void storeWeights(string path_base, vector<MatrixXf>* weights);
+	void storeBiases(string path,vector<VectorXf>* biases);
+	void writeMatrixIn(ofstream &file, MatrixXf &matrix);
 	virtual ~CsvWriter();
 };
 

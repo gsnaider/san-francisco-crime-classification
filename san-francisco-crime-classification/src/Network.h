@@ -23,6 +23,7 @@ typedef struct {
 
 class Network {
 public:
+	Network(const vector<int>& inputLayers, const vector<VectorXf>& biases, const vector<MatrixXf>& weights);
 	Network(const vector<int>& inputLayers);
 
 	/*
@@ -35,6 +36,10 @@ public:
 	MatrixXf evaluate(const MatrixXf& x) const;
 
 	int accuracy(const MatrixXf& x, const VectorXf& y) const;
+
+	vector<VectorXf>* getBiases();
+
+	vector<MatrixXf>* getWeights();
 
 	virtual ~Network();
 
@@ -66,6 +71,8 @@ private:
 	int argmax(const VectorXf& v) const;
 
 	VectorXf yToVector(int y) const;
+
+
 };
 
 #endif /* NETWORK_H_ */

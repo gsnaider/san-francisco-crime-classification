@@ -23,6 +23,23 @@ Network::Network(const vector<int>& inputLayers) {
 	numLayers = layers.size();
 	defaultWeightInitializer();
 }
+
+Network::Network(const vector<int>& inputLayers, const vector<VectorXf>& biases, const vector<MatrixXf>& weights) {
+
+	layers = inputLayers;
+	numLayers = layers.size();
+	this->biases = biases;
+	this->weights = weights;
+}
+
+vector<VectorXf>* Network::getBiases(){
+	return &biases;
+}
+
+vector<MatrixXf>* Network::getWeights(){
+	return &weights;
+}
+
 void Network::defaultWeightInitializer() {
 
 	if (numLayers < 2) {

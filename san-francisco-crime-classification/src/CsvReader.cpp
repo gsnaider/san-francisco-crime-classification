@@ -51,7 +51,6 @@ MatrixXf CsvReader::csvReadToMatrix(string path){
 	//toma la cantidad de elementos en la primera linea para setear columnas
 	//la primera linea solo tiene que tener comas separando datos
 	auto start = chrono::steady_clock::now();
-	vector<vector<float>> matrixBase;
 	ifstream file(path);
 	CsvRow row;
 	int rows = 1;
@@ -111,6 +110,42 @@ MatrixXf CsvReader::csvReadToMatrix(string path){
 	cout << "Proceso " << rows-1 << "lineas\n";
 
 	return matrix;
+}
+
+vector<MatrixXf> CsvReader::readWheights(string path_base, int layers){
+	vector<MatrixXf> wheights;
+
+	for (int layer = 0; layer < layers ; layer++){
+		string path_lectura = path_base + to_string(layer) + ".csv";
+		MatrixXf matrix = this->csvReadToMatrix(path_lectura);
+		wheights.push_back(matrix);
+		cout << "Levanto una matriz de " << matrix.rows()<<"x"<< matrix.cols() << endl;
+	}
+
+	return wheights;
+}
+
+vector<VectorXf> CsvReader::readBiases(string path){
+	auto start = chrono::steady_clock::now();
+	ifstream file(path);
+	CsvRow row;
+	vector<VectorXf> biases;
+
+	while (file >> row){
+		vector<string> data = row.returnData();
+
+		VectorXf bias(data.size());
+		int idx = 0;
+		vector<string>::iterator it = data.begin();
+		for (; it != data.end(); it++ ){
+			bias(idx) = strtof((*it).c_str(),NULL);
+			idx++;
+		}
+		cout << "Levanto un vector de " << bias.rows() << endl;
+		biases.push_back(bias);
+	}
+
+	return biases;
 }
 
 CsvReader::~CsvReader() {

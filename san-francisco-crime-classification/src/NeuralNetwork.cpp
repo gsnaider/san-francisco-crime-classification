@@ -147,7 +147,12 @@ Network trainNetWithParsedTrainData(vector<int> hiddenLayers, int epochs,
 	layers.insert(layers.end(), hiddenLayers.begin(), hiddenLayers.end()); //inserta todos los elementos de hiddenLayers
 	layers.push_back(output_dim);
 
-	Network net(layers);
+	CsvReader reader;
+	vector<MatrixXf> weights = reader.readWheights("Weights",2);
+	vector<VectorXf> biases = reader.readBiases("Biases.csv");
+
+	//Network net(layers);
+	Network net(layers,biases,weights);
 
 	cout << "Arranca train" << endl;
 
@@ -182,7 +187,8 @@ void evaluateTestData(const Network& net) {
 
 
 int main() {
-
+	CsvReader reader;
+	CsvWriter writer;
 	vector<int> hiddenLayers;
 	hiddenLayers.push_back(2);
 
@@ -194,8 +200,13 @@ int main() {
 	Network net = trainNetWithParsedTrainData(hiddenLayers, epochs,
 			miniBatchSize, learningRate, regularizationFactor);
 
+
+	writer.storeWeights("Weights",net.getWeights());
+	writer.storeBiases("Biases.csv",net.getBiases());
+
 	//TODO Deberiamos guardar los datos de la red en un archivo, sino se pierde despues de correr el prog!
 	evaluateTestData(net);
+
 
 	return 0;
 }

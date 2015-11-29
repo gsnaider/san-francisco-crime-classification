@@ -25,6 +25,8 @@ public:
 	CsvReader();
 	vector<vector<string>> csvReadToString(string pathCsv);
 	MatrixXf csvReadToMatrix(string pathCsv);
+	vector<MatrixXf> readWheights(string path_base,int layers);
+	vector<VectorXf> readBiases(string path);
 	virtual ~CsvReader();
 private:
 	vector<string> parseLine(string line);
