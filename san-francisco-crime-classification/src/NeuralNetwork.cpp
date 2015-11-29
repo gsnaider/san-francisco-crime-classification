@@ -169,7 +169,7 @@ void evaluateTestData(Network* net) {
 		return;
 	}
 	cout << "cantidad de features: " << (testData.cols() - 1) << endl << endl;
-	MatrixXf results = net->evaluate(&testData);
+	MatrixXi results = net->evaluate(&testData);
 
 	writer.makeSubmitWithMatrix("data/submit.csv", results);
 }
@@ -182,8 +182,8 @@ int main() {
 
 	int epochs = 10;
 	int miniBatchSize = 600;
-	float learningRate = 0.5;
-	float regularizationFactor = 0.1;
+	float learningRate = 0.01;
+	float regularizationFactor = 0.01;
 
 	Network* net = trainNetWithParsedTrainData(hiddenLayers, epochs,
 			miniBatchSize, learningRate, regularizationFactor);

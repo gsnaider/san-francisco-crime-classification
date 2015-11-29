@@ -7,14 +7,14 @@
 
 #include "Network.h"
 
-void printSample(MatrixXf *matrix, string texto){
-	cout << texto << "\n"<< matrix->block(0,0,4,matrix->cols()) << "\n";
+void printSample(MatrixXf *matrix, string texto) {
+	cout << texto << "\n" << matrix->block(0, 0, 4, matrix->cols()) << "\n";
 }
-void printSample(VectorXf *matrix, string texto){
-	cout << texto << "\n"<< matrix->block(0,0,4,matrix->cols()) << "\n";
+void printSample(VectorXf *matrix, string texto) {
+	cout << texto << "\n" << matrix->block(0, 0, 4, matrix->cols()) << "\n";
 }
-void printSample(VectorXi *matrix, string texto){
-	cout << texto << "\n"<< matrix->block(0,0,4,matrix->cols()) << "\n";
+void printSample(VectorXi *matrix, string texto) {
+	cout << texto << "\n" << matrix->block(0, 0, 4, matrix->cols()) << "\n";
 }
 
 Network::Network(vector<int> layers) {
@@ -26,7 +26,9 @@ Network::Network(vector<int> layers) {
 void Network::defaultWeightInitializer() {
 
 	if (numLayers < 2) {
-		cout << "Debe haber al menos una layer para el input y otra para el output" << endl;
+		cout
+				<< "Debe haber al menos una layer para el input y otra para el output"
+				<< endl;
 		return;
 	}
 	for (int i = 1; i < this->numLayers; i++) {
@@ -34,14 +36,16 @@ void Network::defaultWeightInitializer() {
 		this->biases.push_back(bias);
 
 		srand(time(0)); //para que cambie el random de cada matriz
-		MatrixXf weight = MatrixXf::Random(layers[i], layers[i - 1]).cwiseAbs() / sqrt(layers[i - 1]); //glorot unifrom
+		MatrixXf weight = MatrixXf::Random(layers[i], layers[i - 1]).cwiseAbs()
+				/ sqrt(layers[i - 1]); //glorot unifrom
 
 		weights.push_back(weight);
 	}
 }
 
-void Network::SGD(MatrixXf* x_train, VectorXf* y_train, MatrixXf* x_test, VectorXf* y_test, int epochs,
-		int miniBatchSize, float learningRate, float regularizationFactor) {
+void Network::SGD(MatrixXf* x_train, VectorXf* y_train, MatrixXf* x_test,
+		VectorXf* y_test, int epochs, int miniBatchSize, float learningRate,
+		float regularizationFactor) {
 
 	MatrixXf x_train_shuffled;
 	VectorXf y_train_shuffled;
@@ -59,26 +63,29 @@ void Network::SGD(MatrixXf* x_train, VectorXf* y_train, MatrixXf* x_test, Vector
 
 		srand(time(0));
 		random_shuffle(permutacionFilasRandom.indices().data(),
-				permutacionFilasRandom.indices().data() + permutacionFilasRandom.indices().size());
+				permutacionFilasRandom.indices().data()
+						+ permutacionFilasRandom.indices().size());
 		x_train_shuffled = permutacionFilasRandom * (*x_train);
 		y_train_shuffled = permutacionFilasRandom * (*y_train);
 //		printSample(&x_train_shuffled, "x_train_shuffled");
 //		printSample(&y_train_shuffled, "y_train_shuffled");
 //		Shuffle esta OK.
 		for (int j = 0; j < (dataSize - miniBatchSize); j += miniBatchSize) {
-			miniBatch_x = x_train_shuffled.block(j, 0, miniBatchSize, featuresSize);
+			miniBatch_x = x_train_shuffled.block(j, 0, miniBatchSize,
+					featuresSize);
 			miniBatch_y = y_train_shuffled.segment(j, miniBatchSize);
 //			printSample(&miniBatch_x, "MiniBatch_X");
 //			printSample(&miniBatch_y, "MiniBatch_Y");
 //			MiniBatches OK.
-			updateMiniBatch(&miniBatch_x, &miniBatch_y, learningRate, regularizationFactor, dataSize);
+			updateMiniBatch(&miniBatch_x, &miniBatch_y, learningRate,
+					regularizationFactor, dataSize);
 		}
 		result = accuracy(x_test, y_test);
 		cout << result << " / " << y_test->size() << endl;
 		results.push_back(result);
 	}
 	cout << "Results" << endl;
-	for (size_t i = 0; i < results.size(); i++){
+	for (size_t i = 0; i < results.size(); i++) {
 		cout << results[i] << endl;
 	}
 
@@ -109,11 +116,13 @@ void Network::updateMiniBatch(MatrixXf* miniBatch_x, VectorXf* miniBatch_y,
 			nabla_w[i] = nabla_w_i + delta_nabla_w_i;
 		}
 		for (size_t i = 0; i < weights.size(); i++) {
-			weights[i] = weights[i] * (1 - learningRate * (regularizationFactor / dataSize))
+			weights[i] = weights[i]
+					* (1 - learningRate * (regularizationFactor / dataSize))
 					- nabla_w[i] * (learningRate / miniBatch_y->size());
 		}
 		for (size_t i = 0; i < biases.size(); i++) {
-			biases[i] = biases[i] - nabla_b[i] * (learningRate / miniBatch_y->size());
+			biases[i] = biases[i]
+					- nabla_b[i] * (learningRate / miniBatch_y->size());
 		}
 
 	}
@@ -165,21 +174,23 @@ nablas_t Network::backPropagation(VectorXf* x, int y) {
 
 	activations.push_back(activation);
 
-	delta = costDelta(&activations[activations.size() - 1] , &y_vector);
+	delta = costDelta(&activations[activations.size() - 1], &y_vector);
 
 	nabla_b[nabla_b.size() - 1] = delta;
-	nabla_w[nabla_w.size() - 1] = delta * (activations[activations.size() - 2].transpose());
+	nabla_w[nabla_w.size() - 1] = delta
+			* (activations[activations.size() - 2].transpose());
 
 	for (int l = 2; l < numLayers; l++) {
 		z = zs[zs.size() - l];
 		rp = reluPrime(&z);
 
-		VectorXf aux =( (weights[weights.size() - l + 1]).transpose()) * delta;
+		VectorXf aux = ((weights[weights.size() - l + 1]).transpose()) * delta;
 
 		delta = aux.array() * rp.array(); //ACA HICE MULTIPLICACION PUNTO A PUNTO
 
 		nabla_b[nabla_b.size() - l] = delta;
-		nabla_w[nabla_w.size() - l] = delta * (activations[activations.size() - l - 1].transpose());
+		nabla_w[nabla_w.size() - l] = delta
+				* (activations[activations.size() - l - 1].transpose());
 	}
 
 	nablas_t nablas;
@@ -225,11 +236,11 @@ VectorXf Network::yToVector(int y) {
 	return v;
 }
 
-int Network::argmax(VectorXf* v){
+int Network::argmax(VectorXf* v) {
 	float max = 0;
 	int max_idx;
-	for (int i = 0; i < v->size(); i++){
-		if ((*v)[i] > max){
+	for (int i = 0; i < v->size(); i++) {
+		if ((*v)[i] > max) {
 			max = (*v)[i];
 			max_idx = i;
 		}
@@ -244,10 +255,11 @@ VectorXf Network::costDelta(VectorXf* estimatedResults, VectorXf* y) {
 int Network::accuracy(MatrixXf* x, VectorXf* y) {
 
 	int correct_predictions = 0;
-	for (int i = 0; i < x->rows(); i++){
+	for (int i = 0; i < x->rows(); i++) {
 		VectorXf x_i = x->row(i);
 		int estimated_result = argmax(feedfordward(&x_i));
-		if (estimated_result == (*y)[i]){
+		//printf("%d \n", estimated_result);
+		if (estimated_result == (*y)[i]) {
 			correct_predictions++;
 		}
 	}
@@ -271,14 +283,21 @@ VectorXf* Network::feedfordward(VectorXf* row) {
 	return row;
 }
 
-MatrixXf Network::evaluate(MatrixXf* x){
-	MatrixXf results = MatrixXf::Zero(x->rows(), layers[layers.size() - 1]);
+MatrixXi Network::evaluate(MatrixXf* x) {
+	MatrixXi results = MatrixXi::Zero(x->rows(), layers[layers.size() - 1]);
 	for (int i = 0; i < x->rows(); i++) {
 		VectorXf x_i = x->row(i);
 		VectorXf* result = feedfordward(&x_i);
-		for (int j = 0; j < result->size(); j++){
-			float result_j = (*result)[j];
-			results(i,j) = result_j;
+
+		int estimated_result = argmax(result);
+
+		VectorXi result_binario = VectorXi::Zero(result->rows(),1);
+
+		result_binario[estimated_result] = 1;
+
+		for (int j = 0; j < result_binario.size(); j++) {
+			int result_j = result_binario[j];
+			results(i, j) = result_j;
 		}
 	}
 	return results;

@@ -32,7 +32,7 @@ public:
 	void SGD(MatrixXf* x_train, VectorXf* y_train, MatrixXf* x_test, VectorXf* y_test, int epochs, int miniBatchSize,
 			float learningRate, float regularizationFactor);
 
-	MatrixXf evaluate(MatrixXf* x);
+	MatrixXi evaluate(MatrixXf* x);
 
 	int accuracy(MatrixXf* x, VectorXf* y);
 
