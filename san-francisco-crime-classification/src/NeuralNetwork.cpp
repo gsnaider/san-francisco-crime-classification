@@ -21,49 +21,24 @@ using namespace std;
 using namespace Eigen;
 
 typedef struct {
-	MatrixXf x_train;
-	VectorXf y_train;
-	MatrixXf x_test;
-	VectorXf y_test;
-	MatrixXf x_validation;
-	VectorXf y_validation;
+	MatrixXd x_train;
+	VectorXd y_train;
+	MatrixXd x_test;
+	VectorXd y_test;
+	MatrixXd x_validation;
+	VectorXd y_validation;
 } inputData_t;
 
 const int OUTPUT_SIZE = 39;
 
 //Esto es para testeo.
 //TODO Para correr con todos los datos tiene que ser DATA_SIZE = 1!!!
-const float DATA_SIZE = 0.01;
-
-
-int argmax(const VectorXf& v){
-	float max = 0;
-	int max_idx;
-	for (int i = 0; i < v.size(); i++){
-		if (v[i] > max){
-			max = v[i];
-			max_idx = i;
-		}
-	}
-	return max_idx;
-}
-
-MatrixXf getBinMatrix(const MatrixXf& m){
-	MatrixXf bin_m(m.rows(), m.cols());
-	for (int i = 0; i < m.rows(); i++){
-		VectorXf bin_row = VectorXf::Zero(m.cols());
-		bin_row(argmax(m.row(i))) = 1;
-		for (int j = 0; j < bin_row.cols(); j++){
-			bin_m(i,j) = bin_row(j);
-		}
-	}
-	return bin_m;
-}
+const double DATA_SIZE = 0.1;
 
 inputData_t generateInputData() {
 	CsvReader reader;
 
-	MatrixXf matrix = reader.csvReadToMatrix("data/parsed_train.csv");
+	MatrixXd matrix = reader.csvReadToMatrix("data/parsed_train.csv");
 
 	if (matrix.rows() == 0 && matrix.cols() == 0) {
 		printf("Error leyendo data.\n");
@@ -91,12 +66,12 @@ inputData_t generateInputData() {
 	int ultimo_indice_train = round(matrix.rows() * 0.8);
 	int ultimo_indice_test = round(matrix.rows() * 0.9);
 
-	MatrixXf matrix_train = matrix.block(0, 0, ultimo_indice_train, matrix.cols());
+	MatrixXd matrix_train = matrix.block(0, 0, ultimo_indice_train, matrix.cols());
 
-	MatrixXf matrix_test = matrix.block(ultimo_indice_train, 0,
+	MatrixXd matrix_test = matrix.block(ultimo_indice_train, 0,
 			ultimo_indice_test - ultimo_indice_train, matrix_train.cols());
 
-	MatrixXf matrix_validation = matrix.block(ultimo_indice_test, 0,
+	MatrixXd matrix_validation = matrix.block(ultimo_indice_test, 0,
 			matrix.rows() - ultimo_indice_test, matrix_train.cols());
 
 	matrix.resize(0, 0);
@@ -135,7 +110,7 @@ inputData_t generateInputData() {
 }
 
 Network trainNetWithParsedTrainData(vector<int> hiddenLayers, int epochs,
-		int miniBatchSize, float learningRate, float regularizationFactor) {
+		int miniBatchSize, double learningRate, double regularizationFactor, bool load) {
 
 	inputData_t data = generateInputData();
 
@@ -147,12 +122,13 @@ Network trainNetWithParsedTrainData(vector<int> hiddenLayers, int epochs,
 	layers.insert(layers.end(), hiddenLayers.begin(), hiddenLayers.end()); //inserta todos los elementos de hiddenLayers
 	layers.push_back(output_dim);
 
-	CsvReader reader;
-	vector<MatrixXf> weights = reader.readWheights("Weights",2);
-	vector<VectorXf> biases = reader.readBiases("Biases.csv");
-
-	//Network net(layers);
-	Network net(layers,biases,weights);
+	Network net(layers);
+	if (load){
+		CsvReader reader;
+		vector<MatrixXd> weights = reader.readWheights("Weights",2);
+		vector<VectorXd> biases = reader.readBiases("Biases.csv");
+		net = Network(layers,biases,weights);
+	}
 
 	cout << "Arranca train" << endl;
 
@@ -165,55 +141,117 @@ Network trainNetWithParsedTrainData(vector<int> hiddenLayers, int epochs,
 
 	return net;
 }
-
 void evaluateTestData(const Network& net) {
 	CsvReader reader;
 	CsvWriter writer;
-
-	MatrixXf testData = reader.csvReadToMatrix("data/parsed_test.csv");
+	cout << "Leyendo test data" << endl;
+	MatrixXd testData = reader.csvReadToMatrix("data/parsed_test.csv");
 	if (testData.rows() == 0 && testData.cols() == 0) {
 		printf("Error leyendo test data.\n");
 		return;
 	}
 	cout << "cantidad de features: " << (testData.cols() - 1) << endl << endl;
-	MatrixXf results = net.evaluate(testData);
-//	MatrixXf bin_results = getBinMatrix(results);
-
+	cout << "Evaluando test data" << endl;
+	MatrixXd results = net.evaluate(testData);
 	writer.makeSubmitWithMatrix("data/submit.csv", results);
-//	writer.makeSubmitWithMatrix("data/bin_submit.csv", bin_results);
-
-
 }
 
 
 int main() {
-	CsvReader reader;
-	CsvWriter writer;
-	vector<int> hiddenLayers;
-	hiddenLayers.push_back(2);
 
-	int epochs = 2;
+	CsvReader reader;
+				CsvWriter writer;
+
+	vector<int> hiddenLayers;
+	hiddenLayers.push_back(90);
+	hiddenLayers.push_back(60);
+
+	int epochs = 5;
 	int miniBatchSize = 100;
-	float learningRate = 0.1;
-	float regularizationFactor = 0.1;
+	double learningRate = 0.01;
+	double regularizationFactor = 0.01;
 
 	Network net = trainNetWithParsedTrainData(hiddenLayers, epochs,
-			miniBatchSize, learningRate, regularizationFactor);
+			miniBatchSize, learningRate, regularizationFactor, false);
 
+	writer.storeWeights("net-1-weights",net.getWeights());
+	writer.storeBiases("net-1-biases.csv",net.getBiases());
 
-	writer.storeWeights("Weights",net.getWeights());
-	writer.storeBiases("Biases.csv",net.getBiases());
-
-	//TODO Deberiamos guardar los datos de la red en un archivo, sino se pierde despues de correr el prog!
 	evaluateTestData(net);
-
 
 	return 0;
 }
 
+
+
+//VectorXd yToVecto(int y) {
+//	int output_size = 39;
+//	VectorXd v = VectorXd::Zero(output_size, 1);
+//	v[y] = 1;
+//	return v;
+//}
+
+//VectorXd rel(const VectorXd& z) {
+//	VectorXd result(z.size(), 1);
+//	for (int i = 0; i < z.size(); i++) {
+//		result[i] = max(0.0f, z(i));
+//	}
+//	return result;
+//}
+//
+//VectorXd relPrime(const VectorXd& z) {
+//	VectorXd result(z.size(), 1);
+//	for (int i = 0; i < z.size(); i++) {
+//		result[i] = (z[i] > 0) ? 1 : 0;
+//	}
+//	return result;
+//}
+//
+//VectorXd softma(const VectorXd& z) {
+//	VectorXd z_exp(z.size(), 1);
+//	for (int i = 0; i < z.size(); i++) {
+//		double elem_i = z[i];
+//		z_exp[i] = exp(elem_i);
+//	}
+//	return (z_exp / z_exp.sum());
+//}
+//
+//int argma(const VectorXd& v){
+//	double max = 0;
+//	int max_idx;
+//	for (int i = 0; i < v.size(); i++){
+//		if (v[i] > max){
+//			max = v[i];
+//			max_idx = i;
+//		}
+//	}
+//	return max_idx;
+//}
+//
+//VectorXd costDelt(const VectorXd& estimatedResults, const VectorXd& y){
+//	return (estimatedResults - y);
+//}
+
+
 //int main(){
-//	MatrixXf* m = new MatrixXf;
-//	MatrixXf* m2 = new MatrixXf;
+//
+//	VectorXd a(7);
+//	VectorXd b(7);
+//
+//	a << 1, -2, 3, 0, -3, 6, 0;
+//	b << 0, 0, 0, 0, 0, 1, 0;
+//
+////	cout << rel(a).transpose() << endl;
+////	cout << relPrime(a).transpose() << endl;
+////	cout << softma(a).transpose() << endl;
+////	cout << argma(a) << endl;
+////	cout << costDelt(a, b).transpose() << endl;
+//
+//	cout << yToVecto(5);
+
+
+//	MatrixXd* m = new MatrixXd;
+//	MatrixXd* m2 = new MatrixXd;
 //
 //	*m << 1, 2,
 //	     4, 3;
@@ -222,14 +260,44 @@ int main() {
 //
 //
 //
-//	*m = MatrixXf::Random(2, 3);
-//	*m2 = MatrixXf::Random(2, 3);
+//	*m = MatrixXd::Random(2, 3);
+//	*m2 = MatrixXd::Random(2, 3);
 //
 //
 //	cout << *m << endl;
 //
 //	delete m;
 //
+//	VectorXd a(3);
+//	VectorXd b(3);
+//
+//	a << 1, 2, 3;
+//	b << 4, 1, 0;
+//
+//	VectorXd c = a.array() * b.array();
+//
+//	double d = a.dot(b);
+//	cout << c << endl << d;
+//
+//	MatrixXd a(2,2);
+//	MatrixXd b(2,2);
+//
+//	a << 1, 2,
+//		3, 5;
+//	b << 4, 1,
+//		0, 3;
+//
+//	cout << a * b;
+//
+//	vector<int> a;
+//	a.push_back(2);
+//	a.push_back(4);
+//	a[1] = 8;
+//	for (int i = 0; i < a.size(); i++){
+//		cout << i << " " << a[i] << endl;
+//	}
+
+
 //	return 0;
 //}
 

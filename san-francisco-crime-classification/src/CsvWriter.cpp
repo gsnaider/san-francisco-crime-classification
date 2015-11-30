@@ -12,7 +12,7 @@ CsvWriter::CsvWriter() {
 
 }
 
-void CsvWriter::writeMatrixIn(ofstream &file, MatrixXf &matrix){
+void CsvWriter::writeMatrixIn(ofstream &file, MatrixXd &matrix){
 	int rows = matrix.rows();
 	int cols = matrix.cols();
 	for (int i = 0; i < rows; i++){
@@ -26,7 +26,7 @@ void CsvWriter::writeMatrixIn(ofstream &file, MatrixXf &matrix){
 
 }
 
-void CsvWriter::makeSubmitWithMatrix(string path,MatrixXf matrix){
+void CsvWriter::makeSubmitWithMatrix(string path,MatrixXd matrix){
 
 	ofstream file(path);
 	int rows = matrix.rows();
@@ -57,8 +57,9 @@ void CsvWriter::makeSubmitWithMatrix(string path,MatrixXf matrix){
 	cout << "Tiempo escritura matriz : " << chrono::duration <double, milli> (diff).count() << " ms\n";
 
 }
-void CsvWriter::storeWeights(string path_base, vector<MatrixXf>* weights){
-	vector<MatrixXf>::iterator it =weights->begin();
+
+void CsvWriter::storeWeights(string path_base, vector<MatrixXd>* weights){
+	vector<MatrixXd>::iterator it =weights->begin();
 	int idx = 0;
 	for(; it != weights->end(); it++){
 		//path
@@ -75,9 +76,9 @@ void CsvWriter::storeWeights(string path_base, vector<MatrixXf>* weights){
 
 }
 
-void CsvWriter::storeBiases(string path,vector<VectorXf>* biases){
+void CsvWriter::storeBiases(string path,vector<VectorXd>* biases){
 
-	vector<VectorXf>::iterator it = biases->begin();
+	vector<VectorXd>::iterator it = biases->begin();
 	ofstream file(path);
 	for (; it != biases->end(); it++) {
 
@@ -93,6 +94,7 @@ void CsvWriter::storeBiases(string path,vector<VectorXf>* biases){
 	file.close();
 
 }
+
 CsvWriter::~CsvWriter() {
 	// TODO Auto-generated destructor stub
 }

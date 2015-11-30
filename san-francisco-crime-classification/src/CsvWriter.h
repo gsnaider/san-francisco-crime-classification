@@ -18,10 +18,10 @@ using namespace Eigen;
 class CsvWriter {
 public:
 	CsvWriter();
-	void makeSubmitWithMatrix(std::string path, MatrixXf matrix);
-	void storeWeights(string path_base, vector<MatrixXf>* weights);
-	void storeBiases(string path,vector<VectorXf>* biases);
-	void writeMatrixIn(ofstream &file, MatrixXf &matrix);
+	void makeSubmitWithMatrix(std::string path, MatrixXd matrix);
+	void storeWeights(string path_base, vector<MatrixXd>* weights);
+	void storeBiases(string path,vector<VectorXd>* biases);
+	void writeMatrixIn(ofstream &file, MatrixXd &matrix);
 	virtual ~CsvWriter();
 };
 

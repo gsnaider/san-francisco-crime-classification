@@ -9,6 +9,7 @@
 #include <vector>
 #include <math.h>
 #include <eigen3/Eigen/Dense>
+#include <random>
 
 #ifndef NETWORK_H_
 #define NETWORK_H_
@@ -17,62 +18,65 @@ using namespace std;
 using namespace Eigen;
 
 typedef struct {
-	vector<VectorXf> deltaNabla_b;
-	vector<MatrixXf> deltaNabla_w;
+	vector<VectorXd> deltaNabla_b;
+	vector<MatrixXd> deltaNabla_w;
 }nablas_t;
 
 class Network {
 public:
-	Network(const vector<int>& inputLayers, const vector<VectorXf>& biases, const vector<MatrixXf>& weights);
+
+	Network(const vector<int>& inputLayers, const vector<VectorXd>& biases, const vector<MatrixXd>& weights);
+
 	Network(const vector<int>& inputLayers);
 
 	/*
 	 * Recibe los features en una matriz de x_train y la clasificacion de forma Ej: {0,0,1,0} en y_train
 	 * Se usa el mismo formato para el set de datos para validacion
 	 */
-	void SGD(const MatrixXf& x_train, const VectorXf& y_train, const MatrixXf& x_test, const VectorXf& y_test, const int epochs, const int miniBatchSize,
-			const float learningRate, const float regularizationFactor);
+	void SGD(const MatrixXd& x_train, const VectorXd& y_train, const MatrixXd& x_test, const VectorXd& y_test, const int epochs, const int miniBatchSize,
+			const double learningRate, const double regularizationFactor);
 
-	MatrixXf evaluate(const MatrixXf& x) const;
+	MatrixXd evaluate(const MatrixXd& x) const;
 
-	int accuracy(const MatrixXf& x, const VectorXf& y) const;
+	int accuracy(const MatrixXd& x, const VectorXd& y) const;
 
-	vector<VectorXf>* getBiases();
+	vector<VectorXd>* getBiases();
 
-	vector<MatrixXf>* getWeights();
+	vector<MatrixXd>* getWeights();
+
 
 	virtual ~Network();
 
 private:
 	int numLayers;
 	vector<int> layers;
-	vector<MatrixXf> weights;
-	vector<VectorXf> biases;
+	vector<MatrixXd> weights;
+	vector<VectorXd> biases;
 
 	void defaultWeightInitializer();
 
-	void updateMiniBatch(const MatrixXf& miniBatch_x, const VectorXf& miniBatch_y,
-			const float learningRate, const float regularizationFactor, const int dataSize);
+	void updateMiniBatch(const MatrixXd& miniBatch_x, const VectorXd& miniBatch_y,
+			const double learningRate, const double regularizationFactor, const int dataSize);
 
-	nablas_t backPropagation(const VectorXf& x, const int y);
+	nablas_t backPropagation(const VectorXd& x, const int y);
 
-	VectorXf feedfordward(const VectorXf& row) const;
+	VectorXd feedfordward(const VectorXd& row) const;
 
-//	VectorXf costFunction(VectorXf* estimatedResults, VectorXf* y);
+//	VectorXd costFunction(VectorXd* estimatedResults, VectorXd* y);
 
-	VectorXf costDelta(const VectorXf& estimatedResults, const VectorXf& y) const;
+	VectorXd costDelta(const VectorXd& estimatedResults, const VectorXd& y) const;
 
-	VectorXf softmax(const VectorXf& z) const;
+	//double costLogloss(const VectorXd& estimatedResults, const VectorXd& y) const;
 
-	VectorXf relu(const VectorXf& z) const;
+	VectorXd softmax(const VectorXd& z) const;
 
-	VectorXf reluPrime(const VectorXf& z) const;
+	VectorXd relu(const VectorXd& z) const;
 
-	int argmax(const VectorXf& v) const;
+	VectorXd reluPrime(const VectorXd& z) const;
 
-	VectorXf yToVector(int y) const;
+	int argmax(const VectorXd& v) const;
 
-
+	VectorXd yToVector(int y) const;
 };
 
 #endif /* NETWORK_H_ */
