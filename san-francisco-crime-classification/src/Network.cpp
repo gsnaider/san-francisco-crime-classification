@@ -63,15 +63,10 @@ void Network::defaultWeightInitializer() {
 		VectorXd bias = VectorXd::Zero(this->layers[i], 1).unaryExpr(ptr_fun(gaussian));
 		biases.push_back(bias);
 
-//		srand(time(0)); //para que cambie el random de cada matriz
 		MatrixXd weight = MatrixXd::Zero(layers[i], layers[i - 1]).unaryExpr(ptr_fun(gaussian))  / sqrt(layers[i - 1]); //glorot unifrom
 		weights.push_back(weight);
 	}
 
-//	for (size_t i = 0; i < biases.size(); i++){
-//		cout << "Weights[" << i <<"]: " << weights[i] << '\n' << '\n';
-//		cout << "Biases[" << i <<"]: " << biases[i].transpose() << '\n' << '\n';
-//	}
 }
 
 void Network::SGD(const MatrixXd& x_train, const VectorXd& y_train, const MatrixXd& x_test, const VectorXd& y_test, const int epochs, const int miniBatchSize,
@@ -87,20 +82,13 @@ void Network::SGD(const MatrixXd& x_train, const VectorXd& y_train, const Matrix
 	permutacionFilasRandom.setIdentity();
 	for (int i = 0; i < epochs; i++) {
 		cout << "Iniciando train de epoch " << i << endl;
-//		srand(time(0));
 		random_shuffle(permutacionFilasRandom.indices().data(),
 				permutacionFilasRandom.indices().data() + permutacionFilasRandom.indices().size());
 		MatrixXd x_train_shuffled = permutacionFilasRandom * x_train;
 		VectorXd y_train_shuffled = permutacionFilasRandom * y_train;
-//		printSample(&x_train_shuffled, "x_train_shuffled");
-//		printSample(&y_train_shuffled, "y_train_shuffled");
-//		Shuffle esta OK.
 		for (int j = 0; j < (dataSize - miniBatchSize); j += miniBatchSize) {
 			MatrixXd miniBatch_x = x_train_shuffled.block(j, 0, miniBatchSize, featuresSize);
 			VectorXd miniBatch_y = y_train_shuffled.segment(j, miniBatchSize);
-//			printSample(&miniBatch_x, "MiniBatch_X");
-//			printSample(&miniBatch_y, "MiniBatch_Y");
-//			MiniBatches OK.
 			updateMiniBatch(miniBatch_x, miniBatch_y, learningRate, regularizationFactor, dataSize);
 		}
 		cout << "Finalizado train de epoch " << i << endl;
@@ -112,22 +100,27 @@ void Network::SGD(const MatrixXd& x_train, const VectorXd& y_train, const Matrix
 
 		double cost = totalCost(x_test,y_test);
 		costs.push_back(cost);
+		cout << "-------------------------------------------------------" << endl;
 		cout << "Logloss: " << cost << "\n";
+		cout << "-------------------------------------------------------" << endl;
+		cout << endl;
 
 		results.push_back(result);
 	}
-	cout << "---------------------------" << endl;
-	cout << "Results" << endl;
+	cout << endl;
+	cout << "-------------------------------------------------------" << endl;
+	cout << "Epoch results:" << endl;
 	for (size_t i = 0; i < results.size(); i++){
 		cout << results[i] << "," << endl;
 	}
+	cout << "-------------------------------------------------------" << endl;
 	cout << endl;
-	cout << "---------------------------" << endl;
-	cout << "Costs" << "," << endl;
+	cout << "-------------------------------------------------------" << endl;
+	cout << "Epoch costs:" << endl;
 	for (size_t i = 0; i < costs.size(); i++){
-		cout << costs[i] << endl;
+		cout << costs[i]  << ","<< endl;
 	}
-	cout << "---------------------------" << endl;
+	cout << "-------------------------------------------------------" << endl;
 
 }
 
@@ -154,20 +147,6 @@ void Network::updateMiniBatch(const MatrixXd& miniBatch_x, const VectorXd& miniB
 		for (size_t j = 0; j < nabla_w.size(); j++) {
 			nabla_w[j] = nabla_w[j] + (nablas.deltaNabla_w)[j];
 		}
-//		if (i < 3){
-//			for (size_t j = 0; j < biases.size(); j++){
-//				cout << "DELTA_NABLA_B[" << j <<"]: " << (nablas.deltaNabla_b)[j] << '\n' << '\n';
-//			}
-//			for (size_t j = 0; j < biases.size(); j++){
-//				cout << "DELTA_NABLA_W[" << j <<"]: " << (nablas.deltaNabla_w)[j] << '\n' << '\n';
-//			}
-//			for (size_t j = 0; j < biases.size(); j++){
-//				cout << "NABLA_B[" << j <<"]: " << nabla_b[j] << '\n' << '\n';
-//			}
-//			for (size_t j = 0; j < biases.size(); j++){
-//				cout << "NABLA_W[" << j <<"]: " << nabla_w[j] << '\n' << '\n';
-//			}
-//		}
 		for (size_t j = 0; j < weights.size(); j++) {
 			weights[j] = weights[j] * (1 - learningRate * (regularizationFactor / dataSize))
 					- nabla_w[j] * (learningRate / miniBatch_y.size());
