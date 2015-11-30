@@ -46,7 +46,13 @@ double gaussian(double dummy)
   static normal_distribution<> nd;
   return nd(rng);
 }
-
+double notNan(double d)
+{
+	if( d != d ){
+		d = 0;
+	}
+  return d;
+}
 void Network::defaultWeightInitializer() {
 
 	if (numLayers < 2) {
@@ -62,16 +68,17 @@ void Network::defaultWeightInitializer() {
 		weights.push_back(weight);
 	}
 
-	for (size_t i = 0; i < biases.size(); i++){
-		cout << "Weights[" << i <<"]: " << weights[i] << '\n' << '\n';
-		cout << "Biases[" << i <<"]: " << biases[i].transpose() << '\n' << '\n';
-	}
+//	for (size_t i = 0; i < biases.size(); i++){
+//		cout << "Weights[" << i <<"]: " << weights[i] << '\n' << '\n';
+//		cout << "Biases[" << i <<"]: " << biases[i].transpose() << '\n' << '\n';
+//	}
 }
 
 void Network::SGD(const MatrixXd& x_train, const VectorXd& y_train, const MatrixXd& x_test, const VectorXd& y_test, const int epochs, const int miniBatchSize,
 			const double learningRate, const double regularizationFactor) {
 
 	vector<int> results;
+	vector<double> costs;
 
 	int dataSize = x_train.rows();
 	int featuresSize = x_train.cols();
@@ -102,12 +109,25 @@ void Network::SGD(const MatrixXd& x_train, const VectorXd& y_train, const Matrix
 		cout << endl << "-------------------------------------------------------" << endl;
 		cout << "Epoch " <<i <<  " test results: " << result << " / " << y_test.size()  << endl;
 		cout << endl << "-------------------------------------------------------" << endl;
+
+		double cost = totalCost(x_test,y_test);
+		costs.push_back(cost);
+		cout << "Logloss: " << cost << "\n";
+
 		results.push_back(result);
 	}
+	cout << "---------------------------" << endl;
 	cout << "Results" << endl;
 	for (size_t i = 0; i < results.size(); i++){
-		cout << results[i] << endl;
+		cout << results[i] << "," << endl;
 	}
+	cout << endl;
+	cout << "---------------------------" << endl;
+	cout << "Costs" << "," << endl;
+	for (size_t i = 0; i < costs.size(); i++){
+		cout << costs[i] << endl;
+	}
+	cout << "---------------------------" << endl;
 
 }
 
@@ -269,10 +289,39 @@ int Network::argmax(const VectorXd& v) const{
 VectorXd Network::costDelta(const VectorXd& estimatedResults, const VectorXd& y) const{
 	return (estimatedResults - y);
 }
-//double Network::costLogloss(const VectorXd& estimatedResults, const VectorXd& y) const{
-//	VectorXd (-y*np.log(a))
-//	return (estimatedResults - y);
-//}
+
+double Network::costLogloss(const VectorXd& estimatedResults, const VectorXd& y) const{
+	VectorXd log = estimatedResults.array().log();
+	VectorXd vector = ( -y.array() * log.array());
+	VectorXd NonNaNlog =  vector.unaryExpr(ptr_fun(notNan));
+	double  logLoss = NonNaNlog.sum();
+	return (logLoss);
+}
+
+//def total_cost(self, data, lmbda, convert=False):
+//       """Return the total cost for the data set ``data``.  The flag
+//       ``convert`` should be set to False if the data set is the
+//       training data (the usual case), and to True if the data set is
+//       the validation or test data.  See comments on the similar (but
+//       reversed) convention for the ``accuracy`` method, above.
+//       """
+//       cost = 0.0
+//       for x, y in data:
+//           a = self.feedforward(x)
+//           if convert: y = vectorized_result(y, self.sizes[-1])
+//           cost += self.cost.fn(a, y)/len(data)
+//       return cost
+
+double Network::totalCost( const MatrixXd& x, const VectorXd& y){
+	double cost = 0;
+	for (int i = 0; i< y.size(); i++ ){
+		VectorXd result = feedfordward(x.row(i));
+		int y_i = y[i];
+		VectorXd y_vector = yToVector(y_i);
+		cost += costLogloss(result,y_vector) / y.size();
+	}
+	return cost;
+}
 
 int Network::accuracy(const MatrixXd& x, const VectorXd& y) const {
 

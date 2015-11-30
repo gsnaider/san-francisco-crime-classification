@@ -44,6 +44,7 @@ public:
 
 	vector<MatrixXd>* getWeights();
 
+	double totalCost( const MatrixXd& X, const VectorXd& Y);
 
 	virtual ~Network();
 
@@ -66,7 +67,7 @@ private:
 
 	VectorXd costDelta(const VectorXd& estimatedResults, const VectorXd& y) const;
 
-	//double costLogloss(const VectorXd& estimatedResults, const VectorXd& y) const;
+	double costLogloss(const VectorXd& estimatedResults, const VectorXd& y) const;
 
 	VectorXd softmax(const VectorXd& z) const;
 

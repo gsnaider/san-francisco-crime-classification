@@ -30,15 +30,23 @@ typedef struct {
 } inputData_t;
 
 const int OUTPUT_SIZE = 39;
+const double DATA_SIZE = 0.01;
+const bool LOAD_NET = true;
+const bool TRAIN_NET = false;
 
-//Esto es para testeo.
-//TODO Para correr con todos los datos tiene que ser DATA_SIZE = 1!!!
-const double DATA_SIZE = 0.1;
+const string TRAIN_DATA_FILE = "data/parsed_train.csv";
+const string TEST_DATA_FILE = "data/parsed_test.csv";
+const string WEIGHTS_BASE_LOAD_PATH = "nets/net-temp-weights";
+const string BIASES_LOAD_PATH = "nets/net-temp-biases.csv";
+const string WEIGHTS_BASE_STORAGE_FILE = "nets/net-temp-weights";
+const string BIASES_STORAGE_FILE = "nets/net-temp-biases.csv";
+const string SUBMIT_FILE = "submits/submit-1.csv";
+
 
 inputData_t generateInputData() {
 	CsvReader reader;
 
-	MatrixXd matrix = reader.csvReadToMatrix("data/parsed_train.csv");
+	MatrixXd matrix = reader.csvReadToMatrix(TRAIN_DATA_FILE);
 
 	if (matrix.rows() == 0 && matrix.cols() == 0) {
 		printf("Error leyendo data.\n");
@@ -110,7 +118,7 @@ inputData_t generateInputData() {
 }
 
 Network trainNetWithParsedTrainData(vector<int> hiddenLayers, int epochs,
-		int miniBatchSize, double learningRate, double regularizationFactor, bool load) {
+		int miniBatchSize, double learningRate, double regularizationFactor, bool load, bool train) {
 
 	inputData_t data = generateInputData();
 
@@ -125,27 +133,31 @@ Network trainNetWithParsedTrainData(vector<int> hiddenLayers, int epochs,
 	Network net(layers);
 	if (load){
 		CsvReader reader;
-		vector<MatrixXd> weights = reader.readWheights("Weights",2);
-		vector<VectorXd> biases = reader.readBiases("Biases.csv");
+		vector<MatrixXd> weights = reader.readWheights(WEIGHTS_BASE_LOAD_PATH,2);
+		vector<VectorXd> biases = reader.readBiases(BIASES_LOAD_PATH);
 		net = Network(layers,biases,weights);
 	}
-
-	cout << "Arranca train" << endl;
-
-	net.SGD(data.x_train, data.y_train, data.x_test, data.y_test, epochs, miniBatchSize,
-			learningRate, regularizationFactor);
+	if (train){
+		cout << "Arranca train" << endl;
+		net.SGD(data.x_train, data.y_train, data.x_test, data.y_test, epochs, miniBatchSize,
+				learningRate, regularizationFactor);
+	}
 
 	int validationResult = net.accuracy(data.x_validation, data.y_validation);
+	double cost = net.totalCost(data.x_validation, data.y_validation);
+	cout << "---------------------------" << endl;
 	cout << "Validation results: " << validationResult << " / "
 			<< data.y_validation.rows() << endl;
-
+	cout << "---------------------------" << endl;
+	cout << "Validation cost: " << cost << endl;
+	cout << "---------------------------" << endl;
 	return net;
 }
 void evaluateTestData(const Network& net) {
 	CsvReader reader;
 	CsvWriter writer;
 	cout << "Leyendo test data" << endl;
-	MatrixXd testData = reader.csvReadToMatrix("data/parsed_test.csv");
+	MatrixXd testData = reader.csvReadToMatrix(TEST_DATA_FILE);
 	if (testData.rows() == 0 && testData.cols() == 0) {
 		printf("Error leyendo test data.\n");
 		return;
@@ -153,151 +165,122 @@ void evaluateTestData(const Network& net) {
 	cout << "cantidad de features: " << (testData.cols() - 1) << endl << endl;
 	cout << "Evaluando test data" << endl;
 	MatrixXd results = net.evaluate(testData);
-	writer.makeSubmitWithMatrix("data/submit.csv", results);
+	writer.makeSubmitWithMatrix(SUBMIT_FILE, results);
 }
 
 
 int main() {
 
 	CsvReader reader;
-				CsvWriter writer;
+	CsvWriter writer;
 
 	vector<int> hiddenLayers;
-	hiddenLayers.push_back(90);
-	hiddenLayers.push_back(60);
+	hiddenLayers.push_back(2);
+	//hiddenLayers.push_back(60);
 
-	int epochs = 5;
+	int epochs = 2;
 	int miniBatchSize = 100;
 	double learningRate = 0.01;
 	double regularizationFactor = 0.01;
 
 	Network net = trainNetWithParsedTrainData(hiddenLayers, epochs,
-			miniBatchSize, learningRate, regularizationFactor, false);
+			miniBatchSize, learningRate, regularizationFactor, LOAD_NET, TRAIN_NET);
 
-	writer.storeWeights("net-1-weights",net.getWeights());
-	writer.storeBiases("net-1-biases.csv",net.getBiases());
+	writer.storeWeights(WEIGHTS_BASE_STORAGE_FILE,net.getWeights());
+	writer.storeBiases(BIASES_STORAGE_FILE,net.getBiases());
 
 	evaluateTestData(net);
 
 	return 0;
 }
 
-
-
-//VectorXd yToVecto(int y) {
-//	int output_size = 39;
-//	VectorXd v = VectorXd::Zero(output_size, 1);
-//	v[y] = 1;
-//	return v;
-//}
-
-//VectorXd rel(const VectorXd& z) {
-//	VectorXd result(z.size(), 1);
-//	for (int i = 0; i < z.size(); i++) {
-//		result[i] = max(0.0f, z(i));
-//	}
-//	return result;
-//}
+//int main(){
+//		VectorXd a(7);
+//		VectorXd b(7);
+//		a << 0.21, 0.0, 0.52, 0.1, 0.02, 0.6, 0.001;
+//		b << 0, 0, 1, 0, 0, 0, 0;
 //
-//VectorXd relPrime(const VectorXd& z) {
-//	VectorXd result(z.size(), 1);
-//	for (int i = 0; i < z.size(); i++) {
-//		result[i] = (z[i] > 0) ? 1 : 0;
-//	}
-//	return result;
-//}
+//		VectorXd log = a.array().log();
 //
-//VectorXd softma(const VectorXd& z) {
-//	VectorXd z_exp(z.size(), 1);
-//	for (int i = 0; i < z.size(); i++) {
-//		double elem_i = z[i];
-//		z_exp[i] = exp(elem_i);
-//	}
-//	return (z_exp / z_exp.sum());
-//}
+//		//cout << log.transpose() << endl;
+//		VectorXd vector = (- b.array() * log.array());
 //
-//int argma(const VectorXd& v){
-//	double max = 0;
-//	int max_idx;
-//	for (int i = 0; i < v.size(); i++){
-//		if (v[i] > max){
-//			max = v[i];
-//			max_idx = i;
-//		}
-//	}
-//	return max_idx;
-//}
+//		VectorXd NonNaNlog =  vector.unaryExpr(ptr_fun(notNan));
+//		//cout << vector.transpose() << endl;
+//		double  logLoss = vector.sum();
 //
-//VectorXd costDelt(const VectorXd& estimatedResults, const VectorXd& y){
-//	return (estimatedResults - y);
+//		cout << vector.transpose()  << endl;
+//		cout << NonNaNlog.transpose() << endl;
 //}
-
 
 //int main(){
 //
 //	VectorXd a(7);
 //	VectorXd b(7);
 //
-//	a << 1, -2, 3, 0, -3, 6, 0;
-//	b << 0, 0, 0, 0, 0, 1, 0;
+//	a << 10, 100, 1000, 1, 1,1,1;
+//	b << 1, 1, 1, 1, 1, 1, 1;
 //
+//	VectorXd log = a.array().log();
+//	VectorXd vector = (- b.array() * log.array());
+//	double  logLoss = vector.sum();
 ////	cout << rel(a).transpose() << endl;
 ////	cout << relPrime(a).transpose() << endl;
 ////	cout << softma(a).transpose() << endl;
 ////	cout << argma(a) << endl;
 ////	cout << costDelt(a, b).transpose() << endl;
 //
-//	cout << yToVecto(5);
-
-
-//	MatrixXd* m = new MatrixXd;
-//	MatrixXd* m2 = new MatrixXd;
-//
-//	*m << 1, 2,
-//	     4, 3;
-//	*m2 << 3, 4,
-//		     2, 0;
+//	cout << logLoss;
 //
 //
+////	MatrixXd* m = new MatrixXd;
+////	MatrixXd* m2 = new MatrixXd;
+////
+////	*m << 1, 2,
+////	     4, 3;
+////	*m2 << 3, 4,
+////		     2, 0;
+////
+////
+////
+////	*m = MatrixXd::Random(2, 3);
+////	*m2 = MatrixXd::Random(2, 3);
+////
+////
+////	cout << *m << endl;
+////
+////	delete m;
+////
+////	VectorXd a(3);
+////	VectorXd b(3);
+////
+////	a << 1, 2, 3;
+////	b << 4, 1, 0;
+////
+////	VectorXd c = a.array() * b.array();
+////
+////	double d = a.dot(b);
+////	cout << c << endl << d;
+////
+////	MatrixXd a(2,2);
+////	MatrixXd b(2,2);
+////
+////	a << 1, 2,
+////		3, 5;
+////	b << 4, 1,
+////		0, 3;
+////
+////	cout << a * b;
+////
+////	vector<int> a;
+////	a.push_back(2);
+////	a.push_back(4);
+////	a[1] = 8;
+////	for (int i = 0; i < a.size(); i++){
+////		cout << i << " " << a[i] << endl;
+////	}
 //
-//	*m = MatrixXd::Random(2, 3);
-//	*m2 = MatrixXd::Random(2, 3);
 //
-//
-//	cout << *m << endl;
-//
-//	delete m;
-//
-//	VectorXd a(3);
-//	VectorXd b(3);
-//
-//	a << 1, 2, 3;
-//	b << 4, 1, 0;
-//
-//	VectorXd c = a.array() * b.array();
-//
-//	double d = a.dot(b);
-//	cout << c << endl << d;
-//
-//	MatrixXd a(2,2);
-//	MatrixXd b(2,2);
-//
-//	a << 1, 2,
-//		3, 5;
-//	b << 4, 1,
-//		0, 3;
-//
-//	cout << a * b;
-//
-//	vector<int> a;
-//	a.push_back(2);
-//	a.push_back(4);
-//	a[1] = 8;
-//	for (int i = 0; i < a.size(); i++){
-//		cout << i << " " << a[i] << endl;
-//	}
-
-
 //	return 0;
 //}
 
